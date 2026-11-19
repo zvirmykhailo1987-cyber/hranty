@@ -29,7 +29,7 @@ jobs:
       - name: Tests + coverage
         env:
           UI_DEFAULT_LANG: uk
-        run: pytest -q -p no:cacheprovider --cov --cov-report=term --cov-fail-under=75
+        run: pytest -q -p no:cacheprovider --cov --cov-branch --cov-report=term-missing --cov-fail-under=99
 
       - name: Dependency audit (pip-audit)
         run: pip-audit -r requirements.txt --progress-spinner off

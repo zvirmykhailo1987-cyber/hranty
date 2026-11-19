@@ -1,0 +1,187 @@
+{
+  "measured": "2026-11-19",
+  "bugs_injected": 30,
+  "caught": 30,
+  "results": [
+    {
+      "bug": "Screening accepts a weak match with no stated reason",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_stage_gates.py::test_screening_passes_on_a_strong_match_score_and_fails_on_a_weak_one"
+    },
+    {
+      "bug": "Documents stage opens without the verdict \"apply\"",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_stage_gates.py::test_documents_stage_needs_the_verdict_apply_from_either_source"
+    },
+    {
+      "bug": "Stages can be skipped",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_yadro.py::test_ne_mozhna_pereskochyty"
+    },
+    {
+      "bug": "Submission opens with a required document missing",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_stage_gates.py::test_submission_with_no_documents_names_every_gap"
+    },
+    {
+      "bug": "Submission opens with an unsigned document",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_stage_gates.py::test_only_the_latest_version_counts_for_signoff"
+    },
+    {
+      "bug": "A date alone counts as a submission by a person",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_stage_gates.py::test_result_needs_a_person_who_recorded_the_submission_and_holds_the_right"
+    },
+    {
+      "bug": "Anyone may move an application to the result stage",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_stage_gates.py::test_result_needs_a_person_who_recorded_the_submission_and_holds_the_right"
+    },
+    {
+      "bug": "The author signs off their own document",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_pohodzhennya_http.py::test_author_cannot_approve_own_document"
+    },
+    {
+      "bug": "Sign-off identity is the display name, not the account",
+      "file": "app/services/gates.py",
+      "caught": true,
+      "caught_by": "tests/test_yadro.py::test_avtor_ne_pohodzhuye_sebe"
+    },
+    {
+      "bug": "A submission is recorded over an unsigned current version",
+      "file": "app/web/zayavky.py",
+      "caught": true,
+      "caught_by": "tests/test_review_fixes.py::test_submission_refused_with_unsigned_current_version"
+    },
+    {
+      "bug": "Anyone signed in may record a submission",
+      "file": "app/web/zayavky.py",
+      "caught": true,
+      "caught_by": "tests/test_stage_gates.py::test_a_role_without_the_send_right_cannot_record_a_submission"
+    },
+    {
+      "bug": "A new version at submission keeps the application at submission",
+      "file": "app/web/zayavky.py",
+      "caught": true,
+      "caught_by": "tests/test_review_fixes.py::test_new_version_at_submission_sends_application_back_to_documents"
+    },
+    {
+      "bug": "Documents can be changed after the submission",
+      "file": "app/web/zayavky.py",
+      "caught": true,
+      "caught_by": "tests/test_review_fixes.py::test_no_uploads_after_submission"
+    },
+    {
+      "bug": "An unknown budget scores zero instead of \"no data\"",
+      "file": "app/services/matching.py",
+      "caught": true,
+      "caught_by": "tests/test_matching_ingest.py::test_a_request_with_nothing_known_scores_neutral_not_zero"
+    },
+    {
+      "bug": "An unknown programme geography scores zero",
+      "file": "app/services/matching.py",
+      "caught": true,
+      "caught_by": "tests/test_matching_ingest.py::test_programme_side_unknowns_are_no_data_too"
+    },
+    {
+      "bug": "A programme past its deadline is still matched",
+      "file": "app/services/matching.py",
+      "caught": true,
+      "caught_by": "tests/test_matching_ingest.py::test_a_passed_deadline_filters_the_programme_out"
+    },
+    {
+      "bug": "Recomputing deletes manually rejected matches",
+      "file": "app/services/matching.py",
+      "caught": true,
+      "caught_by": "tests/test_matching_ingest.py::test_recompute_drops_a_new_match_that_became_weak_but_keeps_work_and_rejections"
+    },
+    {
+      "bug": "Rows refused by the ingest gate are not counted",
+      "file": "app/services/ingest.py",
+      "caught": true,
+      "caught_by": "tests/test_matching_ingest.py::test_gate_refuses_anything_but_a_list"
+    },
+    {
+      "bug": "The ingest gate accepts a non-web URL",
+      "file": "app/services/ingest.py",
+      "caught": true,
+      "caught_by": "tests/test_matching_ingest.py::test_every_invalid_row_is_counted_and_reported"
+    },
+    {
+      "bug": "A feed without a status overwrites the curated one",
+      "file": "app/services/ingest.py",
+      "caught": true,
+      "caught_by": "tests/test_review_fixes.py::test_reingest_without_reliability_keeps_the_curated_value"
+    },
+    {
+      "bug": "A re-import overwrites tags a person corrected",
+      "file": "app/services/ingest.py",
+      "caught": true,
+      "caught_by": "tests/test_yadro.py::test_ruchni_tegy_ne_peretyrayutsya"
+    },
+    {
+      "bug": "The daily job creates the same follow-up task twice",
+      "file": "app/services/zhyvyi.py",
+      "caught": true,
+      "caught_by": "tests/test_daily_job.py::test_reapplying_a_closed_status_does_not_repeat_the_follow_up_task"
+    },
+    {
+      "bug": "The daily job leaves no journal entry",
+      "file": "app/services/zhyvyi.py",
+      "caught": true,
+      "caught_by": "tests/test_daily_job.py::test_job_is_idempotent_and_journals_every_run"
+    },
+    {
+      "bug": "The scheduler runs the job on every wake-up",
+      "file": "app/main.py",
+      "caught": true,
+      "caught_by": "tests/test_daily_job.py::test_scheduler_runs_the_job_once_a_day"
+    },
+    {
+      "bug": "A deactivated account keeps its session",
+      "file": "app/web/deps.py",
+      "caught": true,
+      "caught_by": "tests/test_security.py::test_deactivated_user_loses_access_immediately"
+    },
+    {
+      "bug": "A role without the right still passes a guarded route",
+      "file": "app/web/deps.py",
+      "caught": true,
+      "caught_by": "tests/test_mezhi_dostupu.py::test_route_table_is_not_empty"
+    },
+    {
+      "bug": "A return address may point to another site",
+      "file": "app/web/deps.py",
+      "caught": true,
+      "caught_by": "tests/test_stage_gates.py::test_tasks_validate_links_and_never_redirect_off_site"
+    },
+    {
+      "bug": "An idle session never expires",
+      "file": "app/authkit.py",
+      "caught": true,
+      "caught_by": "tests/test_security.py::test_expired_or_idle_session_is_rejected[last_seen_at-zsuv1]"
+    },
+    {
+      "bug": "A CSRF token from another page is accepted",
+      "file": "app/authkit.py",
+      "caught": true,
+      "caught_by": "tests/test_security.py::test_post_with_wrong_csrf_token_is_403"
+    },
+    {
+      "bug": "Repeated failed sign-ins never lock",
+      "file": "app/authkit.py",
+      "caught": true,
+      "caught_by": "tests/test_authkit_edges.py::test_old_failures_fall_out_of_the_window"
+    }
+  ]
+}

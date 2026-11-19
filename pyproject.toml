@@ -54,11 +54,15 @@ enable_error_code = ["union-attr", "attr-defined", "arg-type", "operator", "inde
 
 [tool.coverage.run]
 source = ["app"]
+branch = true
 omit = ["app/seed_demo.py"]
 
 [tool.coverage.report]
 skip_covered = true
-show_missing = false
+show_missing = true
+precision = 1
+# The gate is the measured total (lines + branches) rounded down; CI passes the same number.
+fail_under = 99
 
 [tool.bandit]
 exclude_dirs = ["tests", ".venv"]

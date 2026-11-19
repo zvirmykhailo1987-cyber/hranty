@@ -141,7 +141,7 @@ def arkhiv(aid: int, user: User = Depends(require_cap(CAP_DELETE)), s: Session =
 
 # ── документи ────────────────────────────────────────────────────────────────
 @router.post("/zayavky/{aid}/dokument")
-async def dokument(aid: int, vyd: str = Form("inshe"), nazva: str = Form(""), group_uid: str = Form(""),
+async def dokument(aid: int, vyd: str = Form(""), nazva: str = Form(""), group_uid: str = Form(""),
                    fayl: UploadFile = File(...), user: User = Depends(current_user), s: Session = Depends(get_session)):
     a = s.get(Application, aid)
     if not a:
@@ -160,7 +160,7 @@ async def dokument(aid: int, vyd: str = Form("inshe"), nazva: str = Form(""), gr
                                                        Document.application_id == aid)))
         versiya = max((d.versiya for d in poperedni), default=0) + 1
         if poperedni and not vyd:
-            vyd = poperedni[0].vyd
+            vyd = poperedni[0].vyd          # a new version without a kind keeps its group's kind
     d = Document(application_id=aid, nazva=(nazva or fayl.filename or "")[:200], vyd=vyd if vyd in VYDY_DOK else "inshe",
                  versiya=versiya, stored_name=meta["stored_name"], rozmir=meta["rozmir"], avtor=user.name, avtor_id=user.id,
                  created_by=user.name)

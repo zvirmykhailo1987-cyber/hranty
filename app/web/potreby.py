@@ -110,16 +110,16 @@ async def dokument(pid: int, request: Request, user: User = Depends(current_user
     from ..slovnyky import VYDY_DOK
     if not s.get(Potreba, pid):
         raise HTTPException(404)
-    form = await request.form()
-    fayl = form.get("fayl")
-    if not isinstance(fayl, UploadFile) and not hasattr(fayl, "read"):
-        raise HTTPException(400, "оберіть файл")
-    try:
-        meta = docstore.zberehty(await fayl.read(), fayl.filename or "", "zapyty")
-    except docstore.FaylPomylka as e:
-        raise HTTPException(400, str(e)) from None
-    vyd = form.get("vyd") or "inshe"
-    d = Document(potreba_id=pid, nazva=(form.get("nazva") or fayl.filename or "")[:200], vyd=vyd if vyd in VYDY_DOK else "inshe",
+    async with request.form() as form:          # closes the spooled upload even on a refusal
+        fayl = form.get("fayl")
+        if not isinstance(fayl, UploadFile) and not hasattr(fayl, "read"):
+            raise HTTPException(400, "оберіть файл")
+        try:
+            meta = docstore.zberehty(await fayl.read(), fayl.filename or "", "zapyty")
+        except docstore.FaylPomylka as e:
+            raise HTTPException(400, str(e)) from None
+        vyd, nazva, imya = form.get("vyd") or "inshe", form.get("nazva"), fayl.filename
+    d = Document(potreba_id=pid, nazva=(str(nazva or "") or imya or "")[:200], vyd=vyd if vyd in VYDY_DOK else "inshe",
                  stored_name=meta["stored_name"], rozmir=meta["rozmir"], avtor=user.name, avtor_id=user.id, created_by=user.name)
     d.group_uid = d.uid
     s.add(d); audit.log(s, user.name, "document.upload", entity="potreba", entity_id=pid, detail=d.nazva); s.commit()

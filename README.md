@@ -70,8 +70,17 @@ Implemented in [`app/authkit.py`](app/authkit.py) (shared with the sibling [Proj
 
 Run in CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)): ruff · mypy (strict on the
 security/i18n core) · pytest with an every-screen crawl and generated access-boundary tests ·
-coverage ≥ 75 % · pip-audit · bandit · PII pattern scan of the repo and a freshly seeded demo
-database · Docker build + health check. Numbers: `python scripts/metrics.py`.
+line + branch coverage gate (`--cov-fail-under=99`) · pip-audit · bandit · PII pattern scan of
+the repo and a freshly seeded demo database · Docker build + health check. Numbers: `python scripts/metrics.py`.
+
+- **Tests:** 340 · **coverage of `app/`:** 99.9 % of lines, 99.6 % lines + branches
+  (`branch = true`; `app/seed_demo.py` is omitted, it is exercised by the screen crawl). No
+  `# pragma: no cover` anywhere in `app/`.
+- **Mutation check:** 30 of 30 injected bugs caught ([`docs/mutation-results.json`](docs/mutation-results.json)).
+  Each mutation removes one guarantee (a stage gate, author ≠ approver, "no data" ≠ zero, the ingest
+  gate's count of invalid rows, the daily job's idempotency and journal, a route's capability check,
+  session idle expiry, CSRF, login lockout) from a temporary copy, and the whole suite must fail.
+  Run: `python scripts/mutation_check.py` (`--check` only verifies that every mutation still applies).
 
 ## Internationalisation
 

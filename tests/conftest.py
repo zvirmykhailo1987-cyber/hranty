@@ -17,22 +17,35 @@ import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlmodel import Session, SQLModel, select  # noqa: E402
 
-from app.db import engine, init_db  # noqa: E402
+from app.db import bootstrap, engine, init_db  # noqa: E402
 from app.models import User  # noqa: E402
 from app import authkit  # noqa: E402
 from app.security import KIT, LIMITER, hash_pw  # noqa: E402
 
 CSRF_TEST_TOKEN = "test-csrf-token-0123456789abcdef"
 TEST_PAROL = "test-parol-12345"
+_TEST_HASH = hash_pw(TEST_PAROL)      # argon2 is slow on purpose: hash once, reuse for every test
+
+
+_SCHEMA = {"ready": False}
 
 
 @pytest.fixture(autouse=True)
 def chysta_baza():
-    SQLModel.metadata.drop_all(engine)
-    init_db()
+    """Every test starts from the bootstrapped team on an empty database. The schema is built once
+    (drop + migrate + bootstrap); afterwards emptying the tables is ~30x faster than rebuilding them."""
+    if not _SCHEMA["ready"]:
+        SQLModel.metadata.drop_all(engine)
+        init_db()
+        _SCHEMA["ready"] = True
+    else:
+        with engine.begin() as c:
+            for t in reversed(SQLModel.metadata.sorted_tables):
+                c.execute(t.delete())
+        bootstrap()
     with Session(engine) as s:
         for u in s.exec(select(User)):
-            u.password_hash = hash_pw(TEST_PAROL)
+            u.password_hash = _TEST_HASH
             s.add(u)
         s.commit()
     LIMITER.reset_all()
