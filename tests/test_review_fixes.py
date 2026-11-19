@@ -140,9 +140,9 @@ def _zayavka_na_podachi(s):
     return a
 
 
-def test_new_version_at_submission_sends_application_back_to_documents(s, oksana):
+def test_new_version_at_submission_sends_application_back_to_documents(s, halyna):
     a = _zayavka_na_podachi(s)
-    r = oksana.post(f"/zayavky/{a.id}/dokument", data={"group_uid": "gb", "nazva": "Budget v2"},
+    r = halyna.post(f"/zayavky/{a.id}/dokument", data={"group_uid": "gb", "nazva": "Budget v2"},
                     files={"fayl": ("b.txt", b"altered", "text/plain")}, follow_redirects=False)
     assert r.status_code == 303
     s.refresh(a)
@@ -193,8 +193,8 @@ def test_libreoffice_argv_and_failure_cache(tmp_path, monkeypatch):
     monkeypatch.setattr(perehlyad, "soffice", lambda: "soffice")
     monkeypatch.setattr(perehlyad, "KESH", tmp_path / "kesh")
     monkeypatch.setattr(perehlyad.subprocess, "run", lambda argv, **kw: calls.append(argv))
-    doc = tmp_path / "a.docx"
-    doc.write_bytes(b"not really a docx")
+    doc = tmp_path / "a.doc"                     # legacy binary format: no zip guard
+    doc.write_bytes(b"not really a doc")
     assert perehlyad.pdf_dlya(doc) is None
     assert {"--headless", "--convert-to", "pdf"} <= set(calls[0])
     assert perehlyad.pdf_dlya(doc) is None and len(calls) == 1      # the failure is remembered
@@ -206,3 +206,70 @@ def test_demo_seed_never_touches_a_database_with_data(s, monkeypatch):
     _potreba(s)
     assert seed_demo.seed(s) == {"skipped": True}
     assert json.dumps(True)
+
+
+# ── verification round ───────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("stary,novyi,dl_dniv,aktyvna", [
+    ("open", "closed", 30, False),       # feed closes it explicitly
+    ("closed", "open", 30, True),        # feed reopens it
+])
+def test_active_flag_follows_explicit_feed_status(s, stary, novyi, dl_dniv, aktyvna):
+    dl = (utcnow().date() + timedelta(days=dl_dniv)).isoformat()
+    ingest.importuvaty_zapysy(s, [_zapys(20, status=stary, deadline=dl)], "t")
+    ingest.importuvaty_zapysy(s, [_zapys(20, status=novyi, deadline=dl)], "t")
+    o = s.exec(select(Opportunity)).one()
+    assert o.active is aktyvna
+
+
+@pytest.mark.parametrize("tekst,ochik", [
+    ("від 50 тис до 2 млн євро", (50000.0, 2000000.0, "EUR")),
+    ("€300-500k", (300000.0, 500000.0, "EUR")),
+    ("100 тис. - 1 млн грн", (100000.0, 1000000.0, "UAH")),
+    ("€1.5 million", (None, 1500000.0, "EUR")),
+])
+def test_amount_ranges_and_words(tekst, ochik):
+    assert rozbir.suma(tekst) == ochik
+
+
+def test_municipal_utility_is_not_a_business():
+    assert rozbir.zayavnyky_z_tekstu("комунальні підприємства") == ["kp"]
+
+
+def test_libreoffice_timeout_is_cached_and_missing_soffice_is_not(tmp_path, monkeypatch):
+    import subprocess as sp
+
+    from app.services import perehlyad
+    monkeypatch.setattr(perehlyad, "KESH", tmp_path / "kesh")
+    doc = tmp_path / "a.doc"
+    doc.write_bytes(b"x")
+    monkeypatch.setattr(perehlyad, "soffice", lambda: None)
+    assert perehlyad.pdf_dlya(doc) is None
+    assert not list((tmp_path / "kesh").glob("*.failed")) if (tmp_path / "kesh").exists() else True
+    calls = []
+
+    def hang(argv, **kw):
+        calls.append(argv)
+        raise sp.TimeoutExpired(argv, 180)
+    monkeypatch.setattr(perehlyad, "soffice", lambda: "soffice")
+    monkeypatch.setattr(perehlyad.subprocess, "run", hang)
+    assert perehlyad.pdf_dlya(doc) is None and perehlyad.pdf_dlya(doc) is None
+    assert len(calls) == 1
+
+
+def test_upload_during_submission_needs_send_right(s, oksana):
+    a = _zayavka_na_podachi(s)
+    r = oksana.post(f"/zayavky/{a.id}/dokument", data={"group_uid": "gb", "nazva": "v2"},
+                    files={"fayl": ("b.txt", b"x", "text/plain")}, follow_redirects=False)
+    assert r.status_code == 403
+    s.refresh(a)
+    assert a.stadiya == "podacha"
+
+
+def test_rollback_below_submission_clears_it(s, halyna):
+    a = _zayavka_na_podachi(s)
+    a.podano_at, a.podano_kto = utcnow(), "Halyna"; s.add(a); s.commit()
+    r = halyna.post(f"/zayavky/{a.id}/stadiya", data={"nova": "dokumenty"}, follow_redirects=False)
+    assert r.status_code == 303
+    s.refresh(a)
+    assert a.podano_at is None and a.podano_kto == ""

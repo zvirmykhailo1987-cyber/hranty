@@ -15,7 +15,7 @@ import random
 import sys
 from datetime import timedelta
 
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 
 from . import config
 from .models import (Application, Document, Funder, Opportunity, Potreba, ProgramFile, Task, User,
@@ -142,7 +142,8 @@ def seed(s: Session) -> dict:
     rnd = random.Random(SEED)  # noqa: S311 — deterministic demo data, not security  # nosec B311
     today = utcnow().date()
     # A database that already holds data is never touched — not even its accounts.
-    if s.exec(select(Potreba)).first() or s.exec(select(Opportunity)).first():
+    if (s.exec(select(Potreba)).first() or s.exec(select(Opportunity)).first()
+            or s.exec(select(User).where(func.length(User.password_hash) > 0)).first()):
         return {"skipped": True}
     users = _users(s)
     made = {"opportunities": 0, "requests": 0, "applications": 0}

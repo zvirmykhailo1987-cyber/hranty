@@ -12,7 +12,6 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from tests.conftest import TEST_PAROL
 
 CYR = re.compile(r"[А-Яа-яІіЇїЄєҐґ]")
 SKIP = ("/static", "/logout", "/lang/", "/fayl", ".docx", ".pdf", ".zip", "/vmist", ".png", "export")
@@ -20,10 +19,17 @@ SKIP = ("/static", "/logout", "/lang/", "/fayl", ".docx", ".pdf", ".zip", "/vmis
 
 @pytest.fixture()
 def demo():
+    from sqlmodel import select
+
     from app import seed_demo
     from app.db import engine
+    from app.models import User
     with Session(engine) as s:
-        seed_demo.seed(s)
+        for u in s.exec(select(User)):          # a fresh install: no passwords yet
+            u.password_hash = ""
+            s.add(u)
+        s.commit()
+        assert seed_demo.seed(s) != {"skipped": True}
     return engine
 
 
@@ -32,7 +38,7 @@ def _klient(engine, lang):
     c = TestClient(app, follow_redirects=False)
     c.cookies.set("lang", lang)
     tok = re.search(r'name="csrf_token" value="([^"]+)"', c.get("/login").text).group(1)
-    r = c.post("/login", data={"login": "marko", "password": TEST_PAROL, "csrf_token": tok})
+    r = c.post("/login", data={"login": "marko", "password": "marko-demo-2026", "csrf_token": tok})
     assert r.status_code == 303
     return c
 

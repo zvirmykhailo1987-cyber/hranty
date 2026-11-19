@@ -72,6 +72,10 @@ def zminyty_stadiyu(aid: int, nova: str = Form(...), prychyna_vidboru: str = For
         raise HTTPException(409, "Гейт не пройдено: " + "; ".join(prych))
     if a.stadiya in ("podacha", "rezultat") and nova != a.stadiya and not user.can(CAP_SEND):
         raise HTTPException(403, "Повернути заявку з подачі може лише людина з правом подачі")
+    if a.podano_at and nova in ("ideya", "skryninh", "dokumenty"):
+        audit.log(s, user.name, "application.submission_cleared", entity="application", entity_id=aid,
+                  tier=3, detail=f"{a.podano_kto} {a.podano_at:%d.%m.%Y}")
+        a.podano_at, a.podano_kto, a.rezultat = None, "", ""
     stara, a.stadiya, a.updated_at = a.stadiya, nova, utcnow()
     s.add(a); audit.log(s, user.name, "application.stage", entity="application", entity_id=aid, detail=f"{stara}→{nova}")
     s.commit()
@@ -141,6 +145,8 @@ async def dokument(aid: int, vyd: str = Form("inshe"), nazva: str = Form(""), gr
         raise HTTPException(404)
     if a.podano_at:
         raise HTTPException(409, "Заявку вже подано — документи змінювати не можна")
+    if a.stadiya == "podacha" and not user.can(CAP_SEND):
+        raise HTTPException(403, "На стадії «Подача» документи змінює лише людина з правом подачі")
     try:
         meta = docstore.zberehty(await fayl.read(), fayl.filename or "", "zayavky")
     except docstore.FaylPomylka as e:

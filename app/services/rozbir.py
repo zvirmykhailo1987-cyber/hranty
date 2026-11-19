@@ -58,7 +58,13 @@ def zayavnyky_z_tekstu(t: str) -> list[str]:
     tt = norm(t)
     if not tt:
         return []
-    return [k for k, rxs in _ZAYAV_RX.items() if any(rx.search(tt) for rx in rxs)]
+    out = [k for k, rxs in _ZAYAV_RX.items() if any(rx.search(tt) for rx in rxs)]
+    if "kp" in out and "biznes" in out:
+        # "комунальне підприємство" is a utility; count business only if named separately
+        bez_kp = re.sub(r"комунальн[\wʼ]*\s+підприєм[\wʼ]*", " ", tt)
+        if not any(rx.search(bez_kp) for rx in _ZAYAV_RX["biznes"]):
+            out.remove("biznes")
+    return out
 
 
 _VALYUTY = [("EUR", r"€|eur|євро"), ("USD", r"\$|usd|дол"), ("CHF", r"chf|франк"), ("GBP", r"£|gbp|фунт"),
@@ -68,7 +74,7 @@ _VALYUTY = [("EUR", r"€|eur|євро"), ("USD", r"\$|usd|дол"), ("CHF", r"c
 # "m" of "maximum" or "months" is not read as millions.
 _CHYSLO = re.compile(r"(?<![\d\w])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+|\d{1,3}(?:,\d{3})+(?:\.\d+)?"
                      r"|\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)"
-                     r"(?:\s*(млрд|млн|тис|bn|k|m)(?![\w]))?", re.I)
+                     r"(?:\s*(млрд|млн|тис|bn|k|m|million|mln|thousand)(?![\w]))?", re.I)
 _ROKY = re.compile(r"^(19|20)\d{2}$")
 
 
@@ -86,7 +92,8 @@ def _v_chyslo(s: str, mnozh: str) -> float | None:
     except ValueError:
         return None
     m = (mnozh or "").lower()
-    return x * {"млрд": 1e9, "bn": 1e9, "млн": 1e6, "m": 1e6, "тис": 1e3, "k": 1e3}.get(m, 1)
+    return x * {"млрд": 1e9, "bn": 1e9, "млн": 1e6, "m": 1e6, "million": 1e6, "mln": 1e6,
+                "тис": 1e3, "k": 1e3, "thousand": 1e3}.get(m, 1)
 
 
 def suma(t: str) -> tuple[float | None, float | None, str | None]:
@@ -95,11 +102,17 @@ def suma(t: str) -> tuple[float | None, float | None, str | None]:
     if not tt or tt.startswith("немає даних"):
         return None, None, None
     val = next((k for k, rx in _VALYUTY if re.search(rx, tt)), None)
-    chysla = [_v_chyslo(a, b) for a, b in _CHYSLO.findall(tt) if b or not _ROKY.match(a)]   # years are not amounts
+    pary = [(a, b) for a, b in _CHYSLO.findall(tt) if b or not _ROKY.match(a)]   # years are not amounts
+    # "€300-500k": a multiplier written only on the upper end applies to both ends
+    if len(pary) >= 2 and not pary[0][1] and pary[1][1] and re.search(r"\d\s*[–—-]\s*[€$£]?\s*\d", tt):
+        pary[0] = (pary[0][0], pary[1][1])
+    chysla = [_v_chyslo(a, b) for a, b in pary]
     chysla = [x for x in chysla if x is not None and x >= 100]   # відсікти «20%», «3 роки», «1 грант»
     if not chysla:
         return None, None, val
-    if len(chysla) >= 2 and re.search(r"\d\s*(млн|тис|k|m)?\s*[–—-]\s*[€$£]?\s*\d", tt):
+    diapazon = (re.search(r"\d\s*(млн|тис|k|m)?\.?\s*[–—-]\s*[€$£]?\s*\d", tt)
+                or re.search(r"\b(від|from)\b.*\d.*\b(до|to)\b", tt))
+    if len(chysla) >= 2 and diapazon:
         return min(chysla[:2]), max(chysla[:2]), val
     return (None, chysla[0], val) if re.search(r"\bдо\b|up to|max", tt) or len(chysla) == 1 else (None, max(chysla), val)
 

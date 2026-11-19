@@ -93,8 +93,16 @@ def pdf_dlya(path: Path) -> Path | None:
         return None
     k = kesh_pdf(path)
     nevdacha = k.with_suffix(".failed")
-    if not k.exists() and not nevdacha.exists():
-        _konvertuvaty([path], taimaut=180)
+    if not k.exists() and not nevdacha.exists() and soffice():
+        from .extract import _zip_bezpechnyi
+        if path.suffix.lower() in (".docx", ".xlsx", ".pptx", ".odt", ".ods", ".odp") and not _zip_bezpechnyi(path):
+            nevdacha.parent.mkdir(parents=True, exist_ok=True)
+            nevdacha.write_text("refused: archive too large", encoding="utf-8")
+            return None
+        try:
+            _konvertuvaty([path], taimaut=180)
+        except subprocess.TimeoutExpired:
+            pass                                   # treated as a failure below
         if not k.exists():
             # Remember the failure: a file that cannot be converted must not hold the
             # conversion lock for 180 s on every view.
