@@ -85,6 +85,15 @@ a test crawls every screen in English and fails on any untranslated string.
 - The production system's programme-document harvester (a CLI crawler) is not part of this
   showcase, and the planned agent worker (stage B) is not implemented — the API exposes only the
   ingest endpoint.
+- The login limiter lives in memory: lockouts and the list of clients that signed in before
+  are lost on restart. A distributed guessing burst (50 failures for one login) locks that
+  login for 15 minutes for every client that has not signed in to it before, including the
+  owner on a new device.
+- In-browser preview of Word/Excel/PowerPoint files needs LibreOffice in the image
+  (`docker compose build --build-arg OFFICE_PREVIEW=1`); the default image previews PDF, text,
+  images and sandboxed HTML, and offers the original for download otherwise.
+- Amount parsing is heuristic (UA/EN/IT formats, ranges, multipliers); an unparsed amount stays
+  as text and is left out of budget matching rather than guessed.
 
 ## License
 

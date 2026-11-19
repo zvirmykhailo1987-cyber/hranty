@@ -27,7 +27,7 @@ def test_bez_vkhodu_redirect():
     from fastapi.testclient import TestClient
     from app.main import app
     r = TestClient(app).get("/", follow_redirects=False)
-    assert r.status_code == 307 and r.headers["location"] == "/login"
+    assert r.status_code == 303 and r.headers["location"] == "/login"
 
 
 # ── розбір ────────────────────────────────────────────────────────────────────

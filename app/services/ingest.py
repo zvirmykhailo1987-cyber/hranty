@@ -28,6 +28,8 @@ def status_z_dedlainu(st: str, dl: date | None, sohodni: date | None = None) -> 
             return "closed"
         if dn <= 14:
             return "closing"
+        if st == "closing":
+            return "open"          # deadline moved out: no longer closing
     return st if st in STATUS else "open"
 
 
@@ -102,9 +104,14 @@ def upsert(s: Session, polya: dict, sohodni: date | None = None) -> str:
         o.tags, zminy = polya["tags"], True
     if not o.zayavnyky and polya["zayavnyky"]:
         o.zayavnyky, zminy = polya["zayavnyky"], True
+    suma_zminena = polya.get("amount") not in (None, "") and o.amount == polya["amount"] and \
+        (o.amount_min, o.amount_max, o.currency) != (polya.get("amount_min"), polya.get("amount_max"), polya.get("currency"))
     for k in ("amount_min", "amount_max", "currency"):
-        if polya.get(k) is not None and getattr(o, k) is None:
-            setattr(o, k, polya[k]); zminy = True
+        if suma_zminena or (polya.get(k) is not None and getattr(o, k) is None):
+            setattr(o, k, polya.get(k)); zminy = True       # the text is the source of the numbers
+    if o.status == "closed" and "status" not in yavni and stary_dl != o.deadline and o.deadline \
+            and o.deadline >= (sohodni or utcnow().date()):
+        o.status, zminy = "open", True          # the call was reopened with a new deadline
     if stary_dl and o.deadline and stary_dl != o.deadline:
         from .zhyvyi import podiya
         from ..models import Application

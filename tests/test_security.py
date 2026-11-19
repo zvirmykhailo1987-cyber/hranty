@@ -60,7 +60,7 @@ def test_login_page_lists_no_accounts(lyudy, gist):
 
 def test_protected_screen_redirects_to_login(lyudy, gist):
     r = gist.get("/zayavky")
-    assert r.status_code == 307 and r.headers["location"] == "/login"
+    assert r.status_code == 303 and r.headers["location"] == "/login"
 
 
 # ── passwords ────────────────────────────────────────────────────────────────
@@ -136,7 +136,7 @@ def test_logout_revokes_the_session_server_side(lyudy, gist, engine):
     assert r.status_code == 303
     assert _sesiya(engine).revoked_at is not None
     gist.cookies.set(KIT.session_cookie, raw)            # replaying the old cookie
-    assert gist.get("/zayavky").status_code == 307
+    assert gist.get("/zayavky").status_code == 303
 
 
 def test_logout_everywhere_revokes_all_sessions(lyudy, engine, gist):
@@ -146,7 +146,7 @@ def test_logout_everywhere_revokes_all_sessions(lyudy, engine, gist):
     uviity(gist)
     r = gist.post("/logout/everywhere", data={"csrf_token": gist.cookies.get(KIT.csrf_cookie)})
     assert r.status_code == 303
-    assert druhyi.get("/zayavky").status_code == 307
+    assert druhyi.get("/zayavky").status_code == 303
 
 
 @pytest.mark.parametrize("pole,zsuv", [("expires_at", timedelta(seconds=-1)),
@@ -158,13 +158,13 @@ def test_expired_or_idle_session_is_rejected(lyudy, gist, engine, pole, zsuv):
         setattr(sess, pole, authkit.utcnow() + zsuv)
         s.add(sess)
         s.commit()
-    assert gist.get("/zayavky").status_code == 307
+    assert gist.get("/zayavky").status_code == 303
 
 
 def test_forged_cookie_redirects_not_500(lyudy, gist):
     for kuka in ("1:pidrobleno", "x" * 500, "", "%D1%81%D0%BC"):
         gist.cookies.set(KIT.session_cookie, kuka)
-        assert gist.get("/zayavky").status_code == 307
+        assert gist.get("/zayavky").status_code == 303
 
 
 def test_deactivated_user_loses_access_immediately(lyudy, gist, engine):
@@ -174,7 +174,7 @@ def test_deactivated_user_loses_access_immediately(lyudy, gist, engine):
         u.active = False
         s.add(u)
         s.commit()
-    assert gist.get("/zayavky").status_code == 307
+    assert gist.get("/zayavky").status_code == 303
 
 
 def test_login_rotates_session(lyudy, gist, engine):
@@ -346,3 +346,21 @@ def test_oversized_chunked_form_body_is_413(lyudy, gist):
             yield b"x" * (KIT.small_body // 2)
     r = gist.post("/login", content=body(), headers={"Content-Type": "application/x-www-form-urlencoded"})
     assert r.status_code == 413, r.text
+
+
+def test_per_login_lock_does_not_block_a_known_client():
+    """A distributed burst locks the login for strangers, not for a client that signed in before."""
+    LIMITER.reset_all()
+    LIMITER.success(LIMITER.keys("10.5.5.5", "marko"))
+    for i in range(KIT.max_failures_login):
+        LIMITER.failure(LIMITER.keys(f"10.2.{i}.1", "marko"))
+    assert LIMITER.retry_after(LIMITER.keys("10.9.9.9", "marko")) > 0       # stranger: locked
+    assert LIMITER.retry_after(LIMITER.keys("10.5.5.5", "marko")) == 0      # owner's client: not
+    LIMITER.reset_all()
+
+
+def test_expired_session_post_is_redirected_with_303(gist):
+    """307 would re-send the form (or a whole upload) to /login."""
+    tok = token(gist)
+    r = gist.post("/logout/everywhere", data={"csrf_token": tok})
+    assert r.status_code == 303 and r.headers["location"].endswith("/login")

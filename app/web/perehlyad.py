@@ -62,6 +62,12 @@ def storinka_png(kind: str, key: str, n: int, dpi: int = 110, user: User = Depen
     return FileResponse(png, media_type="image/png", headers={"Cache-Control": "private, max-age=86400"})
 
 
+# The global policy forbids any framing; the preview page frames this one response from
+# its own origin, so only here framing by 'self' is allowed (the middleware keeps these).
+_RAMKA = {"Content-Security-Policy": "default-src 'none'; frame-ancestors 'self'",
+          "X-Frame-Options": "SAMEORIGIN"}
+
+
 @router.get("/perehlyad/{kind}/{key}/vmist")
 def vmist(kind: str, key: str, user: User = Depends(current_user), s: Session = Depends(get_session)):
     path, _ = _dzherelo(kind, key, s)
@@ -71,12 +77,13 @@ def vmist(kind: str, key: str, user: User = Depends(current_user), s: Session = 
         if not pdf:
             raise HTTPException(404, "перегляд недоступний — завантажте файл")
         return FileResponse(pdf, media_type="application/pdf", content_disposition_type="inline",
-                            filename="perehlyad.pdf", headers={"Cache-Control": "private, max-age=3600"})
+                            filename="perehlyad.pdf", headers={"Cache-Control": "private, max-age=3600", **_RAMKA})
     if v == "zobrazhennya":
         return FileResponse(path, media_type=MIME.get(path.suffix.lower(), "application/octet-stream"),
                             content_disposition_type="inline")
     if v == "html":                                       # чужий HTML — лише в пісочниці, без скриптів і форм
         return Response(path.read_bytes(), media_type="text/html; charset=utf-8",
-                        headers={"Content-Security-Policy": "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-inline'",
-                                 "X-Content-Type-Options": "nosniff"})
+                        headers={"Content-Security-Policy": "sandbox; default-src 'none'; img-src data:; "
+                                                                    "style-src 'unsafe-inline'; frame-ancestors 'self'",
+                                 "X-Content-Type-Options": "nosniff", "X-Frame-Options": "SAMEORIGIN"})
     raise HTTPException(404)

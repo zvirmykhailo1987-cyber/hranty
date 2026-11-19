@@ -85,7 +85,8 @@ authkit.install(app, KIT)
 @app.exception_handler(StarletteHTTPException)
 async def _http_error(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 307:
-        return RedirectResponse((exc.headers or {}).get("Location", "/login"), status_code=307)
+        # 303, never 307: a 307 would re-send an expired form (or a whole upload) to /login
+        return RedirectResponse((exc.headers or {}).get("Location", "/login"), status_code=303)
     return _error_page(request, exc.status_code, str(exc.detail or ""))
 
 

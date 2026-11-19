@@ -102,7 +102,7 @@
       <h2>{{ ik('i-zavdannya') }} {{ _("Задачі") }}</h2>
       {% if zadachi %}<ul class="spysok">{% for t in zadachi %}
         <li><span class="data">{{ t.due.strftime('%d.%m') if t.due else '—' }}</span>
-          <span class="nazva" {% if t.done %}style="text-decoration:line-through;color:var(--prygl)"{% endif %}>{{ t.title }}</span>
+          <span class="nazva{% if t.done %} s-zrobleno{% endif %}">{{ t.title }}</span>
           <form method="post" action="/zadachi/{{ t.id }}/hotovo"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="povernutys" value="/zayavky/{{ a.id }}">
             <button class="k-btn tykha shchilna" title="{{ _('Повернути') if t.done else _('Виконано') }}">{{ ik('i-skasuvaty' if t.done else 'i-hotovo') }}</button></form>
           <span class="meta">{% if t.dzherelo != 'ручна' %}{{ t.dzherelo }}{% endif %}</span></li>

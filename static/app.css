@@ -129,6 +129,7 @@ table.k-tab td{ vertical-align:top }
 .perehlyad-storinky{display:none}
 @media (max-width: 760px), (pointer: coarse) and (max-width: 1024px){
   .perehlyad-ramka{display:none}
+  .perehlyad-ramka.html-dok{display:block;block-size:70vh;min-block-size:360px}   /* HTML has no page images: keep it */
   .perehlyad-storinky{display:grid;gap:var(--sp3);margin-block-start:var(--sp3)}
   .perehlyad-storinky img{inline-size:100%;block-size:auto;border:1px solid var(--rule, #d9dde3);border-radius:6px;background:#fff}
 }

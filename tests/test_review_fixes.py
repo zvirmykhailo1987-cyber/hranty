@@ -310,3 +310,40 @@ def test_zip_bomb_with_a_doc_extension_is_refused_before_conversion(tmp_path, mo
         z.writestr("content.xml", b"0" * (extract.MAX_ROZPAKOVKA + 1))
     assert perehlyad.pdf_dlya(f) is None and calls == []
 
+
+# ── final independent review ─────────────────────────────────────────────────
+
+@pytest.mark.parametrize("tekst,ochik", [
+    ("до 250.000 EUR", (None, 250000.0, "EUR")),
+    ("fino a 100.000 €", (None, 100000.0, "EUR")),
+    ("1.500,50 EUR", (None, 1500.5, "EUR")),
+    ("до 2000 євро", (None, 2000.0, "EUR")),
+    ("у 2026 році до 50 000 грн", (None, 50000.0, "UAH")),
+    ("1.5 млн грн", (None, 1500000.0, "UAH")),
+])
+def test_european_thousands_and_four_digit_amounts(tekst, ochik):
+    assert rozbir.suma(tekst) == ochik
+
+
+def test_far_deadline_is_no_longer_closing():
+    from datetime import date, timedelta
+
+    from app.services.ingest import status_z_dedlainu
+    d0 = date(2026, 11, 1)
+    assert status_z_dedlainu("closing", d0 + timedelta(days=60), d0) == "open"
+    assert status_z_dedlainu("rolling", d0 + timedelta(days=60), d0) == "rolling"
+    assert status_z_dedlainu("open", d0 + timedelta(days=10), d0) == "closing"
+
+
+def test_reopened_call_and_changed_amount_on_reingest(s):
+    from datetime import date, timedelta
+    d0 = date.today()
+    ingest.importuvaty_zapysy(s, [_zapys(40, deadline=(d0 + timedelta(days=5)).isoformat())], "t")
+    o = s.exec(select(Opportunity)).one()
+    o.status, o.active = "closed", False
+    s.add(o); s.commit()
+    ingest.importuvaty_zapysy(s, [_zapys(40, deadline=(d0 + timedelta(days=60)).isoformat(),
+                                         amount="up to €100 000")], "t")
+    s.refresh(o)
+    assert o.status == "open" and o.active is True
+    assert o.amount_max == 100000.0

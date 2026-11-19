@@ -20,7 +20,7 @@
 {% elif v == 'zobrazhennya' %}
   <section class="panel"><img class="s-d4e30c4" src="{{ vmist }}" alt="{{ m.nazva }}"></section>
 {% elif v == 'html' %}
-  <iframe class="perehlyad-ramka" src="{{ vmist }}" sandbox title="{{ m.nazva }}"></iframe>
+  <iframe class="perehlyad-ramka html-dok" src="{{ vmist }}" sandbox title="{{ m.nazva }}"></iframe>
 {% else %}
   <section class="panel"><p class="porozhno">{{ _("Цей формат (") }}{{ rozsh }}{{ _(") не відкривається в браузері") }}{% if v == 'ofisnyi' %} {{ _("— конвертер документів недоступний на сервері") }}{% endif %}{{ _(". Завантажте оригінал.") }}</p></section>
 {% endif %}

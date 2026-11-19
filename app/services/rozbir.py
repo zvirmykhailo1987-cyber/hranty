@@ -80,6 +80,8 @@ _ROKY = re.compile(r"^(19|20)\d{2}$")
 
 def _v_chyslo(s: str, mnozh: str) -> float | None:
     s = s.replace(" ", "").replace(" ", "").replace(" ", "")
+    if not mnozh and re.fullmatch(r"\d{1,3}(?:\.\d{3})+(?:,\d+)?", s):
+        s = s.replace(".", "").replace(",", ".")   # "250.000" / "1.500,50": dot = thousands
     if re.fullmatch(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?", s):
         s = s.replace(",", "")              # "100,000" / "1,250,000.50": comma = thousands
     if s.count(",") == 1 and s.count(".") == 0:
@@ -96,13 +98,22 @@ def _v_chyslo(s: str, mnozh: str) -> float | None:
                 "тис": 1e3, "k": 1e3, "thousand": 1e3}.get(m, 1)
 
 
+_VALYUTA_POR = re.compile(r"\s*(грн|uah|eur|євро|usd|дол|chf|gbp|[€$£])", re.I)
+
+
+def _bilya_valyuty(tt: str, m: re.Match[str]) -> bool:
+    """«2000 євро», «€2000»: a 4-digit number written next to a currency is an amount, not a year."""
+    return bool(_VALYUTA_POR.match(tt, m.end()) or re.search(r"[€$£]\s*$", tt[:m.start()]))
+
+
 def suma(t: str) -> tuple[float | None, float | None, str | None]:
     """(min, max, валюта) з тексту суми. Один показник із «до» → лише max. Не розпізнано → None."""
     tt = norm(t)
     if not tt or tt.startswith("немає даних"):
         return None, None, None
     val = next((k for k, rx in _VALYUTY if re.search(rx, tt)), None)
-    zbihy = [m for m in _CHYSLO.finditer(tt) if m.group(2) or not _ROKY.match(m.group(1))]   # years are not amounts
+    zbihy = [m for m in _CHYSLO.finditer(tt)
+             if m.group(2) or not _ROKY.match(m.group(1)) or _bilya_valyuty(tt, m)]   # years are not amounts
     pary = [(m.group(1), m.group(2) or "") for m in zbihy]
     # "€300-500k": a multiplier written only on the upper end applies to both ends — but only when
     # the first number is bare and small and the two numbers are joined directly by the dash.

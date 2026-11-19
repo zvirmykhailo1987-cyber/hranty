@@ -34,3 +34,12 @@ def test_tekst_i_html(s, marko):
     assert "sandbox" in r.headers["content-security-policy"]
 
 
+def test_preview_content_may_be_framed_by_its_own_page(s, marko):
+    """The global policy forbids framing; the preview page frames /vmist from its own origin."""
+    h = _dok(s, b"<p>hi</p>", "c.html")
+    r = marko.get(f"/perehlyad/dok/{h.id}/vmist")
+    assert "frame-ancestors 'self'" in r.headers["content-security-policy"]
+    assert r.headers["x-frame-options"] == "SAMEORIGIN"
+    from app.web import perehlyad
+    assert perehlyad._RAMKA["X-Frame-Options"] == "SAMEORIGIN"
+    assert "frame-ancestors 'self'" in perehlyad._RAMKA["Content-Security-Policy"]
