@@ -1,0 +1,21 @@
+<div class="forma-ryad">
+  <label class="pole"><span>{{ _("Назва запиту *") }}</span><input class="k-pole" name="nazva" required maxlength="200" value="{{ p.nazva if p else '' }}" placeholder="{{ _('Біогаз 1 МВт для агропідприємства') }}"></label>
+  <label class="pole"><span>{{ _("Клієнт (громада / підприємство)") }}</span><input class="k-pole" name="klient" value="{{ p.klient if p else '' }}"></label>
+  <label class="pole"><span>{{ _("ЄДРПОУ") }}</span><input class="k-pole" name="edrpou" value="{{ p.edrpou if p else '' }}"></label>
+</div>
+<label class="pole"><span>{{ _("Опис: що треба профінансувати") }}</span><textarea class="k-pole" name="opys">{{ p.opys if p else '' }}</textarea></label>
+<fieldset class="pole s-e2f6719"><span>{{ _("Напрям (якщо не відмітити — визначимо з опису)") }}</span>
+  <div class="chekbox-sitka">
+    {% for k, nazva in S.TEGY_NAZVY.items() %}
+    <label><input type="checkbox" class="k-praporets" name="tags" value="{{ k }}" {% if p and k in p.tags_list %}checked{% endif %}> {{ nazva }}</label>
+    {% endfor %}
+  </div>
+</fieldset>
+<div class="forma-ryad">
+  <label class="pole"><span>{{ _("Хто подає") }}</span><select class="k-vybir" name="zayavnyk"><option value="">{{ _("— невідомо —") }}</option>
+    {% for k, v in S.ZAYAVNYKY.items() if k != 'bud_khto' %}<option value="{{ k }}" {% if p and p.zayavnyk == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+  <label class="pole"><span>{{ _("Область") }}</span><select class="k-vybir" name="oblast"><option value="">{{ _("— невідомо —") }}</option>
+    {% for o in S.OBLASTI %}<option {% if p and p.oblast == o %}selected{% endif %}>{{ o }}</option>{% endfor %}</select></label>
+  <label class="pole"><span>{{ _("Бюджет, € (орієнтир)") }}</span><input class="k-pole" name="byudzhet_eur" inputmode="decimal" value="{{ '%.0f'|format(p.byudzhet_eur) if p and p.byudzhet_eur is not none else '' }}"></label>
+  <label class="pole"><span>{{ _("Гроші потрібні до") }}</span><input class="k-pole" type="date" name="potribno_do" value="{{ p.potribno_do.isoformat() if p and p.potribno_do else '' }}"></label>
+</div>

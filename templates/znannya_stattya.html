@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ zn.title }} {{ _("· Знання") }}{% endblock %}
+{% block shapka %}<a href="/znannya">{{ _("Знання") }}</a> / {{ typy.get(zn.typ, zn.typ) }}{% endblock %}
+{% block telo %}
+<article class="panel tekst-md zn-stattya">
+  <p class="dribno">{{ typy.get(zn.typ, zn.typ) }} · {{ zn.data|data }}{% if zn.access == 'internal' %} {{ _("· внутрішнє") }}{% endif %}{% if zn.url %} · <a href="{{ zn.url }}" target="_blank" rel="noopener">{{ _("у каналі (Telegraph)") }}</a>{% endif %}</p>
+  <h1 class="s-547d569">{{ zn.title }}</h1>
+  {% if zn.dek %}<p class="pidzah s-d24639c">{{ zn.dek }}</p>{% endif %}
+  {{ zn.body_md|md }}
+  {% if dzherela %}<h2>{{ _("Джерела") }}</h2><ol>{% for d in dzherela %}
+    <li><a href="{{ d.url }}" target="_blank" rel="noopener noreferrer">{{ d.title or d.url }}</a>
+      <span class="dribno">· {{ d.date or '' }} · {{ {'confirmed': _('підтверджено'), 'plausible': _('ймовірно'), 'unverified': _('не підтверджено')}.get(d.reliability, d.reliability or '') }}</span></li>{% endfor %}</ol>{% endif %}
+</article>
+{% endblock %}

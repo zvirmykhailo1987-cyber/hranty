@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<meta name="robots" content="noindex, nofollow">
+<title>{% block title %}{{ _("Гранти під запит") }}{% endblock %}</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+{% for f in ["a-robocha", "yadro", "komponenty-base", "komponenty-keruvannya", "komponenty-forma", "komponenty-dani", "komponenty-shar", "komponenty-karkas"] %}
+<link rel="stylesheet" href="/static/bib/{{ f }}.css">{% endfor %}
+<link rel="stylesheet" href="/static/app.css">
+<link rel="stylesheet" href="/static/inline.css">
+<script src="/static/js/rannii.js"></script>
+<script type="application/json" id="i18n-js">{{ js_i18n()|tojson }}</script>
+<script src="/static/js/app.js" defer></script>
+</head>
+<body>
+{% if user %}
+<div class="kk-app" data-rejka="zakryto">
+  <aside class="kk-rejka">
+    <div class="brend"><span class="znak" aria-hidden="true"></span>{{ _("Гранти під запит") }}</div>
+    <nav class="kk-nav" aria-label="{{ _('Розділи') }}">
+      {% for href, nazva, ikona in nav %}
+      <a href="{{ href }}" {% if (href == '/' and shlyakh == '/') or (href != '/' and shlyakh.startswith(href)) %}aria-current="page"{% endif %}>{{ ik(ikona) }} {{ _(nazva) }}</a>
+      {% endfor %}
+    </nav>
+  </aside>
+  <header class="kk-shapka">
+    <button class="k-btn tykha lyshe-ikona menyu-mob" type="button" aria-label="{{ _('Меню') }}" aria-expanded="false" data-has-js>{{ ik('i-menyu') }}</button>
+    {% if shlyakh != '/' %}{% set batko = '/' if shlyakh.startswith('/perehlyad') else (shlyakh.rstrip('/').rsplit('/', 1)[0] or '/') %}<a class="k-btn tykha shchilna knopka-nazad" href="{{ batko }}" data-nazad
+      aria-label="{{ _('Повернутися до попередньої сторінки') }}" title="{{ _('Назад (Alt+←)') }}">{{ ik('i-nazad') }}<span class="knopka-nazad-tekst">{{ _("Назад") }}</span></a>{% endif %}
+    <b class="shapka-zag">{% block shapka %}{% endblock %}</b>
+    <span class="hto">
+      <button class="k-btn tykha lyshe-ikona" type="button" id="tema" data-has-js
+              aria-label="{{ _('Світла або темна тема') }}" title="{{ _('Світла або темна тема') }}">{{ ik('i-tema') }}</button>
+      <details class="profil-menyu">
+        <summary class="k-avatar" title="{{ user.name }}" aria-label="{{ _('Профіль') }}">{{ user.initsialy }}</summary>
+        <div class="profil-panel panel">
+          <b>{{ user.name }}</b>
+          <span class="pidzah">{{ _(user.role_label) }}</span>
+          {% include "_mova.html" %}
+          <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="k-btn shchilna" type="submit">{{ ik('i-vyhid') }} {{ _("Вийти") }}</button></form>
+          <form method="post" action="/logout/everywhere"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="k-btn tykha shchilna" type="submit">{{ _("Вийти на всіх пристроях") }}</button></form>
+        </div>
+      </details>
+    </span>
+  </header>
+  <main class="kk-telo" data-state="ready">
+    {% block telo %}{% endblock %}
+  </main>
+</div>
+{% else %}
+{% block bez_vkhodu %}{% endblock %}
+{% endif %}
+</body>
+</html>

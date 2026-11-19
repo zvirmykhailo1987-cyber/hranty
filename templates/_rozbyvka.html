@@ -1,0 +1,10 @@
+{# rb = {"score", "vidsiyano", "komponenty": [{kod, znach, vaha, prychyna, nemaye_danykh}]} #}
+{% set NAZVY = {"tegy": _("Напрям"), "zayavnyk": _("Хто подає"), "suma": _("Сума"), "dedlain": _("Строки"), "geo": _("Географія"), "nadiynist": _("Надійність")} %}
+<div class="rozbyvka">
+  {% if rb.vidsiyano %}<div><span class="teg krytych">{{ _("відсіяно") }}</span><span></span><span class="pr">{{ rb.vidsiyano }}</span></div>{% endif %}
+  {% for k in rb.komponenty %}
+  <div><span>{{ NAZVY.get(k.kod, k.kod) }}</span>
+    <span class="smuga {{ 'nemaye' if k.nemaye_danykh }}" role="img" aria-label="{{ (k.znach * 100)|round|int }} {{ _('зі 100') }}"><i data-styl="inline-size:{{ (k.znach * 100)|round|int }}%"></i></span>
+    <span class="pr">{{ k.prychyna }}{% if k.nemaye_danykh %} · <i>{{ _("немає даних") }}</i>{% endif %}</span></div>
+  {% endfor %}
+</div>

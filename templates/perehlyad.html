@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ m.nazva }} {{ _("· Гранти під запит") }}{% endblock %}
+{% block shapka %}<a href="{{ m.nazad }}">{{ _('Пакет') if m.vyd == 'робочий пакет' else (_('Програма') if '/reyestr/' in m.nazad else (_('Заявка') if '/zayavky/' in m.nazad else _('Запит'))) }}</a> {{ _("/ Перегляд документа") }}{% endblock %}
+{% block telo %}
+<div class="ryad-diy">
+  <div class="s-4a4b4c4"><h1 class="zah">{{ m.nazva }}</h1>
+    <p class="pidzah">{{ m.vyd }}{% if m.versiya %} · v{{ m.versiya }}{% endif %}
+      {% if m.ai %} · <span class="ai">{{ _("AI-чернетка — перевірте") }}</span>{% endif %}
+      {% if m.dzherelo %} · {% if m.dzherelo.startswith('http') %}<a href="{{ m.dzherelo }}" target="_blank" rel="noopener noreferrer">{{ _("першоджерело") }}</a>{% else %}{{ _("з проєкту") }}{% endif %}{% endif %}</p></div>
+  <a class="k-btn holovna s-8c5865f" href="{{ m.zavantazhyty }}">{{ ik('i-dokument') }} {{ _("Завантажити оригінал") }}</a>
+</div>
+{% if ye_pdf %}
+  <iframe class="perehlyad-ramka" src="{{ vmist }}#view=FitH" title="{{ m.nazva }}"></iframe>
+  <div class="perehlyad-storinky" aria-label="{{ _('Сторінки документа') }}">
+    {% for n in range(1, n_stor + 1) %}<img src="{{ vmist.rsplit('/', 1)[0] }}/storinka/{{ n }}.png" loading="lazy" alt="{{ _('Сторінка') }} {{ n }} {{ _('з') }} {{ n_stor }}">{% endfor %}
+    <p class="dribno"><a href="{{ vmist }}" target="_blank" rel="noopener">{{ _("Відкрити як PDF") }}</a></p>
+  </div>
+{% elif v == 'tekst' %}
+  <section class="panel tekst-md">{% if md %}{{ tekst|md }}{% else %}<pre class="perehlyad-tekst">{{ tekst }}</pre>{% endif %}</section>
+{% elif v == 'zobrazhennya' %}
+  <section class="panel"><img class="s-d4e30c4" src="{{ vmist }}" alt="{{ m.nazva }}"></section>
+{% elif v == 'html' %}
+  <iframe class="perehlyad-ramka" src="{{ vmist }}" sandbox title="{{ m.nazva }}"></iframe>
+{% else %}
+  <section class="panel"><p class="porozhno">{{ _("Цей формат (") }}{{ rozsh }}{{ _(") не відкривається в браузері") }}{% if v == 'ofisnyi' %} {{ _("— конвертер документів недоступний на сервері") }}{% endif %}{{ _(". Завантажте оригінал.") }}</p></section>
+{% endif %}
+{% endblock %}

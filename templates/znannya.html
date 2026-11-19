@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Знання · Гранти під запит") }}{% endblock %}
+{% block shapka %}{{ _("Знання") }}{% endblock %}
+{% block telo %}
+<div><h1 class="zah">{{ _("Знання") }}</h1>
+  <p class="pidzah">{{ _("Статті й брифи редакції та статті каналу — оновлюються автоматично щодня. Кожен матеріал — з джерелами й позначкою надійності.") }}</p></div>
+<form class="ryad-diy panel s-3c19453" method="get" action="/znannya">
+  <input class="k-pole s-3b7ef05" name="q" value="{{ q }}" placeholder="{{ _('Пошук: програма, громада, тема…') }}">
+  <select class="k-vybir" name="typ"><option value="">{{ _("усі типи") }}</option>{% for k, v in typy.items() %}<option value="{{ k }}" {% if typ == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+  <button class="k-btn holovna">{{ _("Шукати") }}</button>
+</form>
+{% if zapysy %}<div class="pf-kartky">{% for z in zapysy %}
+  <a class="pf-kartka zn-kartka" href="/znannya/{{ z.slug }}">
+    <span class="zn-data">{{ z.data.strftime('%d.%m') if z.data else '' }}</span>
+    <span class="pf-tilo">
+      <span class="ryad-tegiv"><span class="teg {{ 'siryi' if z.typ == 'bryf' else '' }}">{{ typy.get(z.typ, z.typ) }}</span>
+        {% if z.access == 'internal' %}<span class="dribno">{{ _("внутрішнє") }}</span>{% endif %}</span>
+      <b class="pf-nazva">{{ z.title }}</b>
+      {% if z.dek %}<span class="pf-urivok">{{ z.dek }}</span>{% endif %}
+    </span>
+  </a>{% endfor %}</div>
+{% else %}<section class="panel"><p class="porozhno">{{ _('Нічого не знайдено') if q or typ else _('Знань ще немає — вони зʼявляться після першої синхронізації.') }}</p></section>{% endif %}
+{% endblock %}

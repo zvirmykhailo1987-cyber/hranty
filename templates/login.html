@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Вхід · Гранти під запит") }}{% endblock %}
+{% block bez_vkhodu %}
+<main class="gost" data-state="ready">
+  <form method="post" action="/login" class="panel gost-forma">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <h1 class="zah">{{ _("Гранти під запит") }}</h1>
+    <p class="pidzah">{{ _("Оперативний портал Проєктного офісу: запити клієнтів, підбір грантів, заявки.") }}</p>
+    {% if error %}<div class="k-banner krytych" role="alert" id="e-vhid">{{ error }}</div>{% endif %}
+    <label class="pole" for="l-login"><span>{{ _("Логін") }}</span>
+      <input class="k-pole" id="l-login" name="login" required autocomplete="username" autocapitalize="none"
+             spellcheck="false" maxlength="64" value="{{ login_value or '' }}"{% if not error %} autofocus{% endif %}></label>
+    <label class="pole" for="l-parol"><span>{{ _("Пароль") }}</span>
+      <input class="k-pole" id="l-parol" type="password" name="password" autocomplete="current-password" required
+             {% if error %}aria-invalid="true" aria-describedby="e-vhid" autofocus{% endif %}></label>
+    <button class="k-btn holovna" type="submit">{{ _("Увійти") }}</button>
+    {% if demo %}<p class="pidzah">{{ _("Демо-версія з вигаданими даними. Облікові записи — у DEMO.md.") }}</p>{% endif %}
+    {% include "_mova.html" %}
+  </form>
+</main>
+{% endblock %}

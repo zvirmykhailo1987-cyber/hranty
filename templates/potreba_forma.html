@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Новий запит · Гранти під запит") }}{% endblock %}
+{% block shapka %}{{ _("Новий запит клієнта") }}{% endblock %}
+{% block telo %}
+<form method="post" action="/potreby/nova" class="panel s-cfdbe21"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <h1 class="zah">{{ _("На що шукаємо гроші") }}</h1>
+  <p class="pidzah">{{ _("Після збереження підбір грантів запуститься автоматично; кожен збіг матиме пояснення.") }}</p>
+  {% include "_potreba_polya.html" %}
+  <div class="ryad-diy"><button class="k-btn holovna">{{ _("Зберегти й підібрати гранти") }}</button><a class="k-btn tykha" href="/potreby">{{ _("Скасувати") }}</a></div>
+</form>
+{% endblock %}

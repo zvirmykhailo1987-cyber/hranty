@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ kod }} · {{ _("Гранти під запит") }}{% endblock %}
+{% block shapka %}{{ _("Помилка") }} {{ kod }}{% endblock %}
+{% macro vmist() %}
+<div class="panel pomylka-panel" role="alert">
+  <p class="pomylka-kod" aria-hidden="true">{{ kod }}</p>
+  <h1 class="zah">{% if kod == 409 %}{{ _("Крок заблоковано") }}{% elif kod == 403 %}{{ _("Немає права") }}{% elif kod == 404 %}{{ _("Сторінку не знайдено") }}{% elif kod >= 500 %}{{ _("Щось пішло не так") }}{% else %}{{ _("Запит не виконано") }}{% endif %}</h1>
+  {% if kod >= 500 %}<p>{{ _("Помилку записано в журнал. Спробуйте ще раз за хвилину.") }}</p>
+  {% elif kod == 404 and not detail %}<p>{{ _("Адреса неправильна або запис більше не існує.") }}</p>
+  {% elif detail %}<p>{{ detail }}</p>{% endif %}
+  <div class="ryad-diy"><a class="k-btn holovna" href="/">{{ _("На «Сьогодні»") }}</a></div>
+</div>
+{% endmacro %}
+{% block telo %}{{ vmist() }}{% endblock %}
+{% block bez_vkhodu %}<main class="gost" data-state="ready">{{ vmist() }}</main>{% endblock %}

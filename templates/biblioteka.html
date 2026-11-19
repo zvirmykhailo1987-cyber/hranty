@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Документи програм · Гранти під запит") }}{% endblock %}
+{% block shapka %}{{ _("Документи програм") }}{% endblock %}
+{% block telo %}
+<div><h1 class="zah">{{ _("Документи програм") }}</h1>
+  <p class="pidzah">{{ _("Положення, форми, шаблони, бюджети й прецеденти — з походженням: звідки файл і коли отримано. Пошук іде й по тексту файлів.") }}</p></div>
+<form method="get" class="ryad-diy s-9bc0561">
+  <label class="pole s-3b7ef05"><span>{{ _("Пошук у назвах і тексті") }}</span><input class="k-pole" name="q" value="{{ q }}"></label>
+  <label class="pole"><span>{{ _("Вид") }}</span><select class="k-vybir" name="vyd"><option value="">{{ _("усі") }}</option>
+    {% for k, v in vydy.items() %}<option value="{{ k }}" {% if vyd == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+  <button class="k-btn holovna">{{ _("Шукати") }}</button>
+</form>
+{% if ryadky %}
+<div class="pf-kartky">{% for k, o in ryadky %}{% set f = k.f %}
+  <a class="pf-kartka" href="/perehlyad/pf/{{ f.id }}">
+    <span class="pf-mini">{% if k.mini %}<img src="/perehlyad/pf/{{ f.id }}/storinka/1.png?dpi=40" loading="lazy" alt="">{% else %}{{ ik('i-knyha') }}{% endif %}</span>
+    <span class="pf-tilo">
+      <span class="ryad-tegiv"><span class="teg {{ 'siryi' if k.znimok else '' }}">{{ vydy.get(f.vyd, f.vyd) }}</span>
+        <span class="dribno">{{ (f.rozmir / 1024)|round|int }} {{ _("КБ ·") }} {{ f.fetched_at|data }}{% if not f.tekst %} {{ _("· текст не витягнуто") }}{% endif %}</span></span>
+      <b class="pf-nazva">{{ f.nazva }}</b>
+      {% if o %}<span class="dribno">{{ _("Програма:") }} {{ o.title }}</span>{% endif %}
+      {% if k.urivok %}<span class="pf-urivok">{{ k.urivok }}…</span>{% endif %}
+      <span class="dribno pf-dzherelo">{{ k.host }}{% if k.fayl %} · {{ k.fayl }}{% endif %}</span>
+    </span>
+  </a>{% endfor %}</div>
+{% else %}
+<div class="panel s-f2c9619"><b>{{ _('Нічого не знайдено') if q or vyd else _('Документів ще немає') }}</b>
+  <p class="pidzah">{{ _("Файли збирає збирач із сайтів програм (python -m app.zbir) або додаються вручну з картки програми в реєстрі.") }}</p></div>
+{% endif %}
+{% endblock %}

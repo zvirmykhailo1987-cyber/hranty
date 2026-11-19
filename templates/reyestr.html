@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Реєстр грантів · Гранти під запит") }}{% endblock %}
+{% block shapka %}{{ _("Реєстр грантів") }}{% endblock %}
+{% block telo %}
+<form method="get" action="/reyestr" class="kk-tulbar s-ddf3b17">
+  <label class="pole s-908fe14"><span>{{ _("Пошук") }}</span><input class="k-pole" name="q" value="{{ filtr.q }}" placeholder="{{ _('назва, грантодавець, опис') }}"></label>
+  <div class="pole"><span>{{ _("Напрям") }}</span><details class="napryamy-vybir">
+    <summary class="k-vybir">{% if filtr.teg %}{{ _("обрано") }} {{ filtr.teg|length }}{% else %}{{ _("усі") }}{% endif %}</summary>
+    <div class="chekbox-sitka">{% for k, v in S.TEGY_NAZVY.items() %}<label><input type="checkbox" class="k-praporets" name="teg" value="{{ k }}" {% if k in filtr.teg %}checked{% endif %}> {{ v }}</label>{% endfor %}</div>
+  </details></div>
+  <label class="pole"><span>{{ _("Хто подає") }}</span><select class="k-vybir" name="zayavnyk"><option value="">{{ _("усі") }}</option>
+    {% for k, v in S.ZAYAVNYKY.items() %}<option value="{{ k }}" {% if filtr.zayavnyk == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+  <label class="pole"><span>{{ _("Тип") }}</span><select class="k-vybir" name="kind"><option value="">{{ _("усі") }}</option>
+    {% for k, v in S.KINDS.items() %}<option value="{{ k }}" {% if filtr.kind == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+  <label class="pole"><span>{{ _("Статус") }}</span><select class="k-vybir" name="status">
+    <option value="aktyvni" {% if filtr.status == 'aktyvni' %}selected{% endif %}>{{ _("чинні") }}</option><option value="" {% if not filtr.status %}selected{% endif %}>{{ _("усі") }}</option>
+    {% for k, v in S.STATUS.items() %}<option value="{{ k }}" {% if filtr.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+  <label class="pole"><span>{{ _("Надійність") }}</span><select class="k-vybir" name="nadiynist"><option value="">{{ _("будь-яка") }}</option>
+    {% for k, v in S.RELIABILITY.items() %}<option value="{{ k }}" {% if filtr.nadiynist == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+  <button class="k-btn holovna">{{ ik('i-filtr') }} {{ _("Показати") }}</button>
+</form>
+{% if filtr.teg %}<div class="tegy s-7251ed7">{% for k in filtr.teg %}<span class="teg">{{ S.TEGY_NAZVY[k] }}</span>{% endfor %}<a class="dribno" href="/reyestr">{{ _("скинути") }}</a></div>{% endif %}
+<p class="dribno">{{ _("Знайдено") }} {{ vsoho }}{{ _(". Дані — з радару й звірених наборів; перед подачею звіряйте умови на сторінці програми.") }}</p>
+{% if ryadky %}
+<div class="tab-obh"><table class="k-tab">
+  <thead><tr><th>{{ _("Дедлайн") }}</th><th>{{ _("Програма") }}</th><th>{{ _("Напрям") }}</th><th>{{ _("Сума") }}</th><th>{{ _("Надійність") }}</th></tr></thead>
+  <tbody>{% for o in ryadky %}
+  <tr class="k-ryad"><td class="s-86abdab"><b>{{ o.deadline.strftime('%d.%m.%Y') if o.deadline else S.STATUS.get(o.status, o.status) }}</b><div class="dribno">{{ o.deadline|dniv if o.deadline }}</div></td>
+    <td><a href="/reyestr/{{ o.id }}"><b>{{ o.title }}</b></a><div class="dribno">{{ o.source_org or _('грантодавець: немає даних') }} · {{ S.KINDS.get(o.kind, o.kind) }}</div></td>
+    <td><div class="tegy">{% for k, n in o.tags|tegy %}<span class="teg">{{ n }}</span>{% else %}<span class="teg siryi">—</span>{% endfor %}</div></td>
+    <td>{{ o.amount or _('немає даних') }}</td>
+    <td><span class="teg {{ '' if o.reliability == 'confirmed' else ('uvaha' if o.reliability == 'plausible' else 'krytych') }}">{{ S.RELIABILITY.get(o.reliability, o.reliability) }}</span></td></tr>
+  {% endfor %}</tbody></table></div>
+<div class="storinky">
+  {% if storinka > 1 %}<a class="k-btn tykha shchilna" href="?{{ qs }}&storinka={{ storinka - 1 }}">{{ ik('i-nazad') }} {{ _("Назад") }}</a>{% endif %}
+  <span>{{ _("сторінка") }} {{ storinka }} {{ _("з") }} {{ storinok }}</span>
+  {% if storinka < storinok %}<a class="k-btn tykha shchilna" href="?{{ qs }}&storinka={{ storinka + 1 }}">{{ _("Далі") }} {{ ik('i-dali') }}</a>{% endif %}
+</div>
+{% else %}
+<div class="panel s-f2c9619"><b>{{ _("Нічого не знайдено") }}</b><p class="pidzah">{{ _("Спробуйте коротший запит або зніміть фільтри.") }}</p>
+  <div><a class="k-btn" href="/reyestr">{{ _("Скинути фільтри") }}</a></div></div>
+{% endif %}
+{% endblock %}

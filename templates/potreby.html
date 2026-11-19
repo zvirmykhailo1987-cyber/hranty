@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Запити клієнтів · Гранти під запит") }}{% endblock %}
+{% block shapka %}{{ _("Запити клієнтів") }}{% endblock %}
+{% block telo %}
+<div class="ryad-diy"><div><h1 class="zah">{{ _("Запити клієнтів") }}</h1><p class="pidzah">{{ _("ПКД, біометан, сортування, очисні — під кожен запит портал тримає ранжований список грантів.") }}</p></div>
+  <a class="k-btn holovna s-8c5865f" href="/potreby/nova">{{ ik('i-plus') }} {{ _("Новий запит") }}</a></div>
+{% if potreby %}
+<div class="tab-obh"><table class="k-tab">
+  <thead><tr><th>{{ _("Запит") }}</th><th>{{ _("Напрям") }}</th><th>{{ _("Хто подає · де") }}</th><th class="chyslo">{{ _("Збігів ≥50") }}</th><th>{{ _("Статус") }}</th></tr></thead>
+  <tbody>
+  {% for p in potreby %}
+  <tr class="k-ryad"><td><a href="/potreby/{{ p.id }}"><b>{{ p.nazva }}</b></a><div class="dribno">{{ p.klient or _('клієнт: немає даних') }}</div></td>
+    <td><div class="tegy">{% for k, n in p.tags|tegy %}<span class="teg">{{ n }}</span>{% else %}<span class="teg siryi">{{ _("не вказано") }}</span>{% endfor %}</div></td>
+    <td>{{ S.ZAYAVNYKY.get(p.zayavnyk, '—') }}<div class="dribno">{{ p.oblast or _('область: немає даних') }}</div></td>
+    <td class="chyslo">{{ lichba.get(p.id, 0) }}</td>
+    <td>{% if p.status == 'aktyvnyi' %}<span class="teg">{{ _("активний") }}</span>{% elif p.status == 'pauza' %}<span class="teg uvaha">{{ _("пауза") }}</span>{% else %}<span class="teg siryi">{{ _("закрито") }}</span>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody></table></div>
+{% else %}
+<div class="panel s-ada8b7c"><b>{{ _("Запитів ще немає") }}</b>
+  <p class="pidzah">{{ _("Заведіть перший запит клієнта — і портал підбере гранти з реєстру з поясненням кожного збігу.") }}</p>
+  <div><a class="k-btn holovna" href="/potreby/nova">{{ _("Додати запит") }}</a></div></div>
+{% endif %}
+{% endblock %}

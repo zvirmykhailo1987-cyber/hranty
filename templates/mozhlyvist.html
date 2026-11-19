@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ o.title }} {{ _("· Гранти під запит") }}{% endblock %}
+{% block shapka %}<a href="/reyestr">{{ _("Реєстр") }}</a> {{ _("/ програма") }}{% endblock %}
+{% block telo %}
+<div>
+  <h1 class="zah">{{ o.title }}</h1>
+  <p class="pidzah">{{ o.source_org or _('грантодавець: немає даних') }}{% if funder %} · <b>{{ funder.name }}</b>{% endif %} · {{ S.KINDS.get(o.kind, o.kind) }} ·
+    <span class="teg {{ '' if o.reliability == 'confirmed' else 'uvaha' }}">{{ S.RELIABILITY.get(o.reliability, o.reliability) }}</span>
+    {% if o.verdykt %} {{ _("· скринінг:") }} <b>{{ o.verdykt }}</b>{% endif %}</p>
+</div>
+<div class="sitka-2">
+  <div class="s-664d8b4">
+    <section class="panel">
+      <h2>{{ ik('i-detali') }} {{ _("Умови") }}</h2>
+      <dl class="fakty">
+        <dt>{{ _("Дедлайн") }}</dt><dd>{{ o.deadline|data if o.deadline else S.STATUS.get(o.status, o.status) }}{% if o.deadline %} ({{ o.deadline|dniv }}){% endif %}</dd>
+        <dt>{{ _("Сума") }}</dt><dd>{{ o.amount or _('немає даних') }}</dd>
+        <dt>{{ _("Для кого") }}</dt><dd>{{ o.for_whom or _('немає даних') }}</dd>
+        <dt>{{ _("Географія") }}</dt><dd>{{ o.geo or _('немає даних') }}</dd>
+        <dt>{{ _("Першоджерело") }}</dt><dd>{% if o.url %}<a href="{{ o.url }}" target="_blank" rel="noopener">{{ o.url[:90] }}</a>{% else %}{{ _("немає") }}{% endif %}</dd>
+        <dt>{{ _("Перевірено") }}</dt><dd>{{ o.last_checked|data }} {{ _("· джерело запису:") }} {{ o.source_feed or '—' }}</dd>
+        {% if o.zviryty %}<dt>{{ _("Звірити") }}</dt><dd class="ai">{{ o.zviryty }}</dd>{% endif %}
+      </dl>
+      {% if o.notes %}<div class="tekst-dovgyi">{{ o.notes }}</div>{% endif %}
+    </section>
+    <section class="panel" id="fayly">
+      <h2>{{ ik('i-knyha') }} {{ _("Документи програми") }} <span class="roztyah">{{ fayly|length }}</span></h2>
+      {% if fayly %}<div class="pf-kartky">{% for k in fayly %}{% set f = k.f %}
+        <a class="pf-kartka" href="/perehlyad/pf/{{ f.id }}">
+          <span class="pf-mini">{% if k.mini %}<img src="/perehlyad/pf/{{ f.id }}/storinka/1.png?dpi=40" loading="lazy" alt="">{% else %}{{ ik('i-knyha') }}{% endif %}</span>
+          <span class="pf-tilo">
+            <span class="ryad-tegiv"><span class="teg {{ 'siryi' if k.znimok else '' }}">{{ S.VYDY_DOK.get(f.vyd, f.vyd) }}</span>
+              <span class="dribno">{{ (f.rozmir / 1024)|round|int }} {{ _("КБ ·") }} {{ f.fetched_at|data }}</span></span>
+            <b class="pf-nazva">{{ f.nazva }}</b>
+            {% if k.urivok %}<span class="pf-urivok">{{ k.urivok }}…</span>{% endif %}
+            <span class="dribno pf-dzherelo">{{ k.host }}{% if k.fayl %} · {{ k.fayl }}{% endif %}</span>
+          </span>
+        </a>{% endfor %}</div>
+      {% else %}<p class="porozhno">{{ _("Документів ще немає: на сайті програми файлів не знайдено або сайт закрив доступ. Завантажте положення, форму чи шаблон вручну.") }}</p>{% endif %}
+      <form method="post" action="/biblioteka" enctype="multipart/form-data" class="ryad-diy"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="opportunity_id" value="{{ o.id }}">
+        <select class="k-vybir" name="vyd">{% for k, v in S.VYDY_DOK.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
+        <input class="k-pole s-07fa7b4" name="source_url" placeholder="{{ _('URL, звідки файл') }}">
+        <input type="file" name="fayl" required>
+        <button class="k-btn">{{ _("Завантажити") }}</button>
+      </form>
+    </section>
+  </div>
+  <div class="s-664d8b4">
+    <section class="panel">
+      <h2>{{ ik('i-tsil') }} {{ _("Під які запити підходить") }}</h2>
+      {% if zbihy %}<ul class="spysok">{% for m, p in zbihy %}
+        <li><span class="bal">{{ m.score|bal }}</span><a class="nazva" href="/potreby/{{ p.id }}">{{ p.nazva }}</a><span class="dribno">{{ m.stan }}</span></li>{% endfor %}</ul>
+      {% else %}<p class="porozhno">{{ _("Жодного запиту з балом від 35.") }}</p>{% endif %}
+      {% if zayavky %}<p class="dribno">{{ _("Заявки:") }} {% for a in zayavky %}<a href="/zayavky/{{ a.id }}">#{{ a.id }} {{ S.STADII.get(a.stadiya) }}</a>{{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+    </section>
+    <form method="post" action="/reyestr/{{ o.id }}/verdykt" class="panel"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h2>{{ ik('i-zatverdzhennya') }} {{ _("Скринінг: подаватися?") }}</h2>
+      <p class="dribno">{{ _("Вердикт потрібен, щоб заявка пройшла зі «Скринінгу» в «Документи». Під конкретний запит вердикт ставиться в заявці (проробка з джерелами).") }}</p>
+      <input class="k-pole" name="prymitka" placeholder="{{ _('Чому (коротко)') }}">
+      <div class="ryad-diy">{% for v in verdykty %}<button class="k-btn shchilna {{ 'holovna' if o.verdykt == v }}" name="verdykt" value="{{ v }}">{{ v }}</button>{% endfor %}</div>
+    </form>
+    <form method="post" action="/reyestr/{{ o.id }}/klasyfikatsiya" class="panel"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h2>{{ _("Класифікація") }} {% if o.tags_avto %}<span class="roztyah">{{ _("визначено автоматично") }}</span>{% endif %}</h2>
+      <div class="chekbox-sitka">{% for k, v in S.TEGY_NAZVY.items() %}<label><input type="checkbox" class="k-praporets" name="tags" value="{{ k }}" {% if k in o.tags_list %}checked{% endif %}> {{ v }}</label>{% endfor %}</div>
+      <b class="dribno">{{ _("Хто може подати") }}</b>
+      <div class="chekbox-sitka">{% for k, v in S.ZAYAVNYKY.items() %}<label><input type="checkbox" class="k-praporets" name="zayavnyky" value="{{ k }}" {% if k in o.zayavnyky_list %}checked{% endif %}> {{ v }}</label>{% endfor %}</div>
+      <button class="k-btn">{{ _("Зберегти й перерахувати збіги") }}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

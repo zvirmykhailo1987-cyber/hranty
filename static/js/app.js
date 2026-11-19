@@ -1,0 +1,67 @@
+/* App shell behaviour (no inline scripts: the CSP forbids them).
+   - CSRF: every same-origin unsafe fetch/htmx request carries X-CSRF-Token.
+   - Mobile navigation rail toggle. */
+(function () {
+  "use strict";
+  var D = document;
+  var meta = D.querySelector('meta[name="csrf-token"]');
+  var TOKEN = meta ? meta.content : "";
+  var UNSAFE = /^(POST|PUT|PATCH|DELETE)$/i;
+
+
+  var origFetch = window.fetch;
+  window.fetch = function (input, init) {
+    init = init || {};
+    var url = typeof input === "string" ? input : (input && input.url) || "";
+    var sameOrigin = !/^[a-z]+:\/\//i.test(url) || url.indexOf(location.origin) === 0;
+    if (sameOrigin && UNSAFE.test(init.method || "GET")) {
+      var h = new Headers(init.headers || {});
+      if (!h.has("X-CSRF-Token")) h.set("X-CSRF-Token", TOKEN);
+      init.headers = h;
+    }
+    return origFetch.call(this, input, init);
+  };
+
+  D.addEventListener("htmx:configRequest", function (e) {
+    if (UNSAFE.test(e.detail.verb || "")) e.detail.headers["X-CSRF-Token"] = TOKEN;
+  });
+
+  var b = D.querySelector(".menyu-mob");
+  if (b) b.addEventListener("click", function () {
+    var a = D.querySelector(".kk-app");
+    var open = a.dataset.rejka !== "vidkryto";
+    a.dataset.rejka = open ? "vidkryto" : "zakryto";
+    b.setAttribute("aria-expanded", String(open));
+  });
+
+  /* Theme toggle (light ⇄ dark), remembered per browser. */
+  var tema = D.getElementById("tema");
+  if (tema) tema.addEventListener("click", function () {
+    var R = D.documentElement, nova = R.dataset.tema === "dark" ? "light" : "dark";
+    R.dataset.tema = nova;
+    try { localStorage.setItem("hranty-tema", nova); } catch (e) {}
+  });
+
+  /* "Back" button: in-portal navigation history (works without a referrer). */
+  try {
+    var h = JSON.parse(sessionStorage.getItem("nav") || "[]"), u = location.pathname + location.search;
+    if (h[h.length - 1] !== u) { h.push(u); if (h.length > 40) h = h.slice(-40); sessionStorage.setItem("nav", JSON.stringify(h)); }
+  } catch (e) {}
+  var nazad = D.querySelector("[data-nazad]");
+  if (nazad) nazad.addEventListener("click", function (e) {
+    try {
+      var h = JSON.parse(sessionStorage.getItem("nav") || "[]"); h.pop(); var p = h.pop();
+      sessionStorage.setItem("nav", JSON.stringify(h));
+      if (p) { e.preventDefault(); location.href = p; }
+    } catch (x) {}
+  });
+  D.addEventListener("keydown", function (e) {
+    if (e.altKey && e.key === "ArrowLeft" && nazad) { e.preventDefault(); nazad.click(); }
+  });
+
+  /* Forms marked data-pidtverdyty ask before an irreversible action. */
+  D.addEventListener("submit", function (e) {
+    var f = e.target.closest("form[data-pidtverdyty]");
+    if (f && !window.confirm(f.dataset.pidtverdyty)) e.preventDefault();
+  });
+})();

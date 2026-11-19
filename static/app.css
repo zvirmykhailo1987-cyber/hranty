@@ -1,0 +1,183 @@
+/* Портал «Гранти під запит» — шар поверх бібліотеки (мова А «робоча»).
+   Смак: білий фон, графіт, ОДИН акцент (петроль із мови А). Без бежу. */
+:root[data-tema=light]{ --tlo:#fff; --tlo-2:oklch(.975 0 0); --poverhnya:#fff }
+body{ margin:0; background:var(--tlo); color:var(--tilo) }
+a{ color:var(--akcent-tekst, var(--akcent)) }
+.ik{ inline-size:16px; block-size:16px; flex:none; vertical-align:-3px }
+
+.kk-rejka .brend{ display:flex; align-items:center; gap:8px; font-weight:650; margin-block-end:var(--sp4) }
+.kk-rejka .brend .znak{ inline-size:22px; block-size:22px; border-radius:50%; border:1.5px solid var(--akcent);
+  display:grid; place-items:center }
+.kk-rejka .brend .znak::after{ content:""; inline-size:8px; block-size:8px; border-radius:50%; background:var(--akcent) }
+.kk-nav a{ display:flex; align-items:center; gap:8px }
+.kk-shapka .hto{ display:flex; align-items:center; gap:8px; margin-inline-start:auto; font-size:var(--kegl-dribnyi) }
+.kk-telo{ padding:var(--sp4) var(--sp5); display:grid; gap:var(--sp5); align-content:start; min-inline-size:0 }
+h1.zah{ font-size:1.35rem; margin:0; line-height:1.25 }
+.pidzah{ color:var(--prygl); margin:4px 0 0; font-size:var(--kegl-dribnyi) }
+
+.sitka-2{ display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:var(--sp4) }
+.sitka-3{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp4) }
+@media (max-width:980px){ .sitka-2,.sitka-3{ grid-template-columns:minmax(0,1fr) } }
+
+.panel{ background:var(--poverhnya); border:1px solid var(--mezha-m); border-radius:var(--r,10px); padding:var(--sp4);
+  display:grid; gap:var(--sp3); align-content:start; min-inline-size:0 }
+.panel > h2{ font-size:1rem; margin:0; display:flex; align-items:center; gap:8px }
+.panel > h2 .roztyah{ margin-inline-start:auto; font-weight:400; font-size:var(--kegl-dribnyi); color:var(--prygl) }
+
+.kpi{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--sp3) }
+.kpi > div{ background:var(--poverhnya); border:1px solid var(--mezha-m); border-radius:var(--r,10px); padding:var(--sp3) var(--sp4) }
+.kpi b{ display:block; font-size:1.6rem; font-variant-numeric:tabular-nums; letter-spacing:-.01em }
+.kpi span{ color:var(--prygl); font-size:var(--kegl-dribnyi) }
+@media (max-width:700px){ .kpi{ grid-template-columns:repeat(2,minmax(0,1fr)) } }
+
+.spysok{ list-style:none; margin:0; padding:0; display:grid }
+.spysok > li{ display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:4px 12px; align-items:baseline;
+  padding:10px 0; border-block-start:1px solid var(--mezha-m) }
+.spysok > li:first-child{ border-block-start:0 }
+.spysok .data{ font-weight:650; font-variant-numeric:tabular-nums; min-inline-size:3.2rem }
+.spysok .nazva{ min-inline-size:0; overflow-wrap:anywhere }
+.spysok .meta{ grid-column:2 / -1; color:var(--prygl); font-size:var(--kegl-dribnyi) }
+.porozhno{ color:var(--prygl); padding:var(--sp3) 0 }
+
+.teg{ display:inline-flex; align-items:center; padding:1px 8px; border-radius:999px; font-size:12px;
+  background:color-mix(in oklch, var(--akcent) 10%, transparent); color:var(--akcent-tekst, var(--akcent)); white-space:nowrap }
+.teg.siryi{ background:var(--tlo-2); color:var(--prygl) }
+.teg.uvaha{ background:color-mix(in oklch, var(--uvaha) 14%, transparent); color:var(--uvaha) }
+.teg.krytych{ background:color-mix(in oklch, var(--krytych) 12%, transparent); color:var(--krytych) }
+.tegy{ display:flex; flex-wrap:wrap; gap:4px }
+
+/* бал і розбивка підбору */
+.bal{ font-weight:700; font-variant-numeric:tabular-nums; font-size:1.05rem }
+.rozbyvka{ display:grid; gap:4px; font-size:var(--kegl-dribnyi) }
+.rozbyvka > div{ display:grid; grid-template-columns:6.5rem 56px minmax(0,1fr); gap:10px; align-items:center }
+.zbih .rozbyvka-obh{ grid-column:2 / -1 }
+.zbih .rozbyvka-obh > summary{ cursor:pointer; margin-block-end:6px }
+.smuga{ block-size:6px; border-radius:3px; background:var(--tlo-2); overflow:hidden }
+.smuga > i{ display:block; block-size:100%; background:var(--akcent) }
+.smuga.nemaye > i{ background:var(--mezha) }
+.rozbyvka .pr{ color:var(--prygl); min-inline-size:0; overflow-wrap:anywhere }
+
+.zbih{ display:grid; grid-template-columns:3.2rem minmax(0,1fr) auto; gap:var(--sp3); padding:var(--sp3) 0;
+  border-block-start:1px solid var(--mezha-m) }
+.zbih:first-child{ border-block-start:0 }
+.zbih .diyi{ display:flex; gap:6px; align-items:start; flex-wrap:wrap; justify-content:end }
+.zbih.vidkhyleno{ opacity:.55 }
+@media (max-width:700px){ .zbih{ grid-template-columns:3rem minmax(0,1fr) } .zbih .diyi{ grid-column:1 / -1; justify-content:start }
+  .zbih .rozbyvka-obh{ grid-column:1 / -1 } .rozbyvka > div{ grid-template-columns:5.5rem 44px minmax(0,1fr) } }
+
+/* дошка стадій */
+.kk-doshka{ grid-template-columns:repeat(5,minmax(220px,1fr)) }
+[data-kartka] .meta{ color:var(--prygl); font-size:12px; display:flex; gap:6px; flex-wrap:wrap }
+
+/* гейт */
+.gejt{ border-radius:var(--r,10px); padding:var(--sp3); border:1px solid var(--mezha-m); display:grid; gap:6px }
+.gejt.ok{ border-color:color-mix(in oklch, var(--dobre) 45%, var(--mezha-m)) }
+.gejt.ni{ border-color:color-mix(in oklch, var(--uvaha) 55%, var(--mezha-m)); background:color-mix(in oklch, var(--uvaha) 5%, transparent) }
+.gejt ul{ margin:0; padding-inline-start:1.2em }
+.kroky{ display:flex; gap:4px; flex-wrap:wrap; font-size:12px }
+.kroky span{ padding:3px 10px; border-radius:999px; background:var(--tlo-2); color:var(--prygl) }
+.kroky span.ye{ background:var(--akcent); color:var(--na-akcenti, #fff) }
+.kroky span.proideno{ background:color-mix(in oklch, var(--akcent) 15%, transparent); color:var(--akcent-tekst, var(--akcent)) }
+
+.forma-ryad{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--sp3) }
+.pole{ display:grid; gap:4px; font-size:var(--kegl-dribnyi) }
+.pole > span{ color:var(--prygl) }
+.pole .k-pole, .pole select, .pole textarea{ inline-size:100%; box-sizing:border-box }
+textarea.k-pole{ min-block-size:6rem; resize:vertical; font:inherit }
+.chekbox-sitka{ display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:6px 12px; font-size:var(--kegl-dribnyi) }
+.chekbox-sitka label{ display:flex; gap:6px; align-items:center }
+.napryamy .chekbox-sitka{ font-size:.95rem; gap:8px 16px; margin-block:var(--sp3) }
+.napryamy .skilky{ margin-inline-start:auto; color:var(--prygl); font-size:var(--kegl-dribnyi); font-variant-numeric:tabular-nums }
+.napryamy-vybir{ position:relative }
+.napryamy-vybir > summary{ list-style:none; cursor:pointer; min-inline-size:140px }
+.napryamy-vybir[open] > .chekbox-sitka{ position:absolute; z-index:20; inset-block-start:calc(100% + 4px); inset-inline-start:0;
+  inline-size:min(480px,90vw); background:var(--poverhnya); border:1px solid var(--mezha-m); border-radius:var(--r,10px); padding:var(--sp3) }
+.ryad-diy{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+.inline{ display:inline }
+.fakty{ display:grid; grid-template-columns:minmax(7rem,auto) minmax(0,1fr); gap:6px 16px; font-size:var(--kegl-dribnyi); margin:0 }
+.fakty dt{ color:var(--prygl) } .fakty dd{ margin:0; overflow-wrap:anywhere }
+.tekst-dovgyi{ white-space:pre-wrap; font-size:var(--kegl-dribnyi); color:var(--tilo); max-block-size:16rem; overflow:auto }
+.ai{ color:var(--uvaha); font-weight:600 }
+.dribno{ font-size:12px; color:var(--prygl) }
+table.k-tab td{ vertical-align:top }
+.tab-obh{ overflow-x:auto; border:1px solid var(--mezha-m); border-radius:var(--r,10px) }
+.storinky{ display:flex; gap:8px; align-items:center; justify-content:flex-end; font-size:var(--kegl-dribnyi) }
+
+.menyu-mob{ display:none }
+@media (max-width:900px){ .menyu-mob{ display:inline-flex } }
+
+/* Робочий пакет */
+.paket-nav{margin-block:var(--sp3);flex-wrap:wrap}
+.tekst-md{line-height:1.55;overflow-wrap:break-word;overflow-x:auto}
+.tekst-md h1,.tekst-md h2{font-size:1.1rem;margin-block:var(--sp3) var(--sp2)}
+.tekst-md h3{font-size:1rem;margin-block:var(--sp3) var(--sp1)}
+.tekst-md p,.tekst-md ul,.tekst-md ol{margin-block:var(--sp2)}
+.tekst-md ul,.tekst-md ol{padding-inline-start:1.4em}
+.tekst-md table{border-collapse:collapse;width:100%;margin-block:var(--sp3);font-size:.92em}
+.tekst-md td,.tekst-md th{min-width:9ch;hyphens:manual}
+.tekst-md th,.tekst-md td{border:1px solid var(--rule, #d9dde3);padding:6px 8px;vertical-align:top;text-align:start}
+.tekst-md th{background:var(--povtor, #f4f6f8);font-weight:600}
+.tekst-md blockquote{border-inline-start:3px solid var(--rule, #d9dde3);padding-inline-start:var(--sp3);color:var(--prygl, #555)}
+.kartka-dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px}
+.kartka-dl dt{color:var(--prygl, #555);font-size:.9em}
+.kartka-dl dd{margin:0;overflow-wrap:anywhere}
+
+/* Перегляд документа */
+.perehlyad-ramka{display:block;inline-size:100%;block-size:calc(100vh - 190px);min-block-size:520px;border:1px solid var(--rule, #d9dde3);border-radius:8px;background:#fff;margin-block-start:var(--sp3)}
+.perehlyad-tekst{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.95em;margin:0}
+.paket-kartka-pid{margin-block-start:var(--sp4)}
+.perehlyad-storinky{display:none}
+@media (max-width: 760px), (pointer: coarse) and (max-width: 1024px){
+  .perehlyad-ramka{display:none}
+  .perehlyad-storinky{display:grid;gap:var(--sp3);margin-block-start:var(--sp3)}
+  .perehlyad-storinky img{inline-size:100%;block-size:auto;border:1px solid var(--rule, #d9dde3);border-radius:6px;background:#fff}
+}
+
+/* Документи програми — картки з мініатюрою */
+.pf-kartky{display:grid;gap:var(--sp3);margin-block:var(--sp3)}
+.pf-kartka{display:grid;grid-template-columns:72px minmax(0,1fr);gap:var(--sp3);padding:var(--sp3);border:1px solid var(--rule, #d9dde3);border-radius:8px;color:inherit;text-decoration:none;background:#fff;transition:border-color .15s, box-shadow .15s}
+.pf-kartka:hover,.pf-kartka:focus-visible{border-color:var(--akcent, #0b6b5a);box-shadow:0 2px 10px rgb(0 0 0 / .06)}
+.pf-mini{inline-size:72px;block-size:96px;border:1px solid var(--rule, #d9dde3);border-radius:4px;overflow:hidden;display:grid;place-items:center;background:#f6f7f9;color:var(--prygl, #667)}
+.pf-mini img{inline-size:100%;block-size:100%;object-fit:cover;object-position:top}
+.pf-tilo{display:grid;gap:4px;min-inline-size:0}
+.ryad-tegiv{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pf-nazva{line-height:1.3;overflow-wrap:anywhere}
+.pf-urivok{font-size:.9em;color:var(--prygl, #555);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pf-dzherelo{overflow-wrap:anywhere}
+
+/* Кнопка «Назад» — завжди в шапці */
+.knopka-nazad{display:inline-flex;align-items:center;gap:6px;flex:none}
+@media (max-width: 560px){.knopka-nazad-tekst{display:none}}
+
+/* Знання */
+.zn-kartka{grid-template-columns:56px minmax(0,1fr)}
+.zn-data{font-weight:700;font-variant-numeric:tabular-nums;color:var(--prygl,#555);padding-top:2px}
+.zn-stattya{max-inline-size:820px}
+
+/* ── Shell additions (vitryna): guest pages, profile menu, language switch ── */
+.gost{ min-block-size:100dvh; display:grid; place-items:center; padding:24px }
+.gost-forma{ inline-size:min(420px,100%) }
+.pomylka-panel{ inline-size:min(560px,100%); margin-inline:auto }
+.pomylka-kod{ font-size:2.6rem; font-weight:700; line-height:1; margin:0; color:var(--prygl) }
+.shapka-zag{ min-inline-size:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.profil-menyu{ position:relative }
+.profil-menyu > summary{ list-style:none; cursor:pointer }
+.profil-menyu > summary::-webkit-details-marker{ display:none }
+.profil-panel{ position:absolute; inset-inline-end:0; inset-block-start:calc(100% + 8px); z-index:50;
+  min-inline-size:15rem; max-inline-size:min(20rem,90vw) }
+.profil-panel form{ margin:0 }
+.profil-panel .k-btn{ inline-size:100% }
+.mova-perem{ display:flex; gap:var(--sp2); flex-wrap:wrap; align-items:baseline; font-size:var(--kegl-dribnyi) }
+:root[data-tema=dark]{ color-scheme:dark }
+
+/* `hidden` must always win over layout classes (a display:grid utility would otherwise
+   keep a hidden empty-state visible next to real data). */
+html [hidden] { display: none !important }
+
+/* Phones: the leading cell (type tag or date) gets its own line so the title keeps the full
+   width — otherwise a long tag squeezes the title into one-letter lines. */
+@media (max-width:560px){
+  .spysok > li{ grid-template-columns:minmax(0,1fr) auto }
+  .spysok > li > :first-child{ grid-column:1 / -1; justify-self:start }
+  .spysok .meta{ grid-column:1 / -1 }
+}

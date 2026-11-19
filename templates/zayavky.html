@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Заявки · Гранти під запит") }}{% endblock %}
+{% block shapka %}{{ _("Заявки") }}{% endblock %}
+{% block telo %}
+<div><h1 class="zah">{{ _("Заявки за стадіями") }}</h1>
+  <p class="pidzah">{{ _("Ідея → Скринінг → Документи → Подача → Результат. Перехід уперед відкривається лише після гейту стадії; подає завжди людина.") }}</p></div>
+<div class="kk-doshka s-0ddf068" role="list" aria-label="{{ _('Стадії заявок') }}">
+  {% for k, nazva in stadii.items() %}
+  <section data-kolonka="{{ k }}" role="listitem">
+    <div class="zahol"><b>{{ nazva }}</b> <span class="skilky">{{ kolonky[k]|length }}</span></div>
+    {% for a, o, p in kolonky[k] %}
+    <a class="s-b2ab899" data-kartka href="/zayavky/{{ a.id }}">
+      <span class="nazva"><b>{{ o.title if o else a.nazva }}</b></span>
+      <span class="meta">{% if p %}<span>{{ p.nazva }}</span>{% endif %}
+        {% if o and o.deadline %}<span class="teg {{ 'krytych' if o.dniv_do() is not none and o.dniv_do() <= 7 else '' }}">{{ o.deadline|dniv }}</span>{% endif %}
+        {% if a.verdykt == 'подаватися' %}<span class="teg">{{ _("подаватися") }}</span>{% elif a.verdykt == 'уточнити' %}<span class="teg uvaha">{{ _("уточнити") }}</span>{% endif %}
+        {% if a.rezultat %}<span class="teg">{{ S.REZULTATY.get(a.rezultat) }}</span>{% endif %}</span>
+    </a>
+    {% else %}<div class="porozhnya dribno">{{ _("порожньо") }}</div>{% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

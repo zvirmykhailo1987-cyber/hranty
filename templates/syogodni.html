@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Сьогодні · Гранти під запит") }}{% endblock %}
+{% block shapka %}{{ _("Сьогодні,") }} {{ sohodni()|data }}{% endblock %}
+{% block telo %}
+<div class="kpi">
+  <div><b>{{ kpi.zapyty }}</b><span>{{ _("активних запитів клієнтів") }}</span></div>
+  <div><b>{{ kpi.zayavky }}</b><span>{{ _("заявок у роботі") }}</span></div>
+  <div><b>{{ kpi.dedlainy14 }}</b><span>{{ _("дедлайнів за 14 днів") }}</span></div>
+  <div><b>{{ kpi.mozhlyvosti }}</b><span>{{ _("чинних можливостей у реєстрі") }}</span></div>
+</div>
+
+<form method="get" action="/reyestr" class="panel napryamy s-2f559a5">
+  <h2>{{ ik('i-filtr') }} {{ _("Класифікація грантів") }} <span class="roztyah">{{ _("позначте напрями — покажемо чинні програми") }}</span></h2>
+  <div class="chekbox-sitka">{% for k, v in S.TEGY_NAZVY.items() %}<label><input type="checkbox" class="k-praporets" name="teg" value="{{ k }}"> {{ v }} <span class="skilky">{{ za_napryamom[k] }}</span></label>{% endfor %}</div>
+  <div class="ryad-diy"><button class="k-btn holovna">{{ ik('i-filtr') }} {{ _("Показати гранти") }}</button><a class="k-btn tykha" href="/reyestr">{{ _("увесь реєстр") }}</a></div>
+</form>
+
+<div class="sitka-2 s-d4ce0c2">
+  <section class="panel" id="zminy">
+    <h2>{{ ik('i-uvaha') }} {{ _("Що змінилось за тиждень") }}
+      <span class="roztyah">{% if obsl %}{{ _("портал оновився сам") }} {{ obsl.created_at|data }}{% endif %}</span></h2>
+    {% if zminy %}<ul class="spysok">{% for z in zminy %}
+      <li><span class="teg {{ 'krytych' if z.vazhlyvist >= 3 else ('uvaha' if z.vazhlyvist == 2 else 'siryi') }}">{{ {'nova_mozhlyvist': _('нове'), 'novyi_zbih': _('під проєкт'), 'dedlain_zmineno': _('дедлайн'), 'zakryvayetsya': _('закривається'), 'prohrama_zakryta': _('закрито'), 'nove_znannya': _('знання')}.get(z.typ, z.typ) }}</span>
+        {% if z.znannya_slug %}<a class="nazva" href="/znannya/{{ z.znannya_slug }}">{{ z.tekst }}</a>
+        {% elif z.potreba_id and z.opportunity_id %}<a class="nazva" href="/potreby/{{ z.potreba_id }}">{{ z.tekst }}</a>
+        {% elif z.opportunity_id %}<a class="nazva" href="/reyestr/{{ z.opportunity_id }}">{{ z.tekst }}</a>
+        {% else %}<span class="nazva">{{ z.tekst }}</span>{% endif %}
+        <span class="meta">{{ z.created_at|data }}</span></li>{% endfor %}</ul>
+    {% else %}<p class="porozhno">{{ _("За тиждень змін ще немає — вони зʼявляться після щоденного оновлення.") }}</p>{% endif %}
+  </section>
+  <section class="panel">
+    <h2>{{ ik('i-dovidnyk') }} {{ _("Нове в знаннях") }} <a class="roztyah" href="/znannya">{{ _("усі знання") }}</a></h2>
+    {% if znannya %}<ul class="spysok">{% for z in znannya %}
+      <li><span class="data">{{ z.data.strftime('%d.%m') if z.data else '' }}</span><a class="nazva" href="/znannya/{{ z.slug }}">{{ z.title }}</a>
+        <span class="meta">{{ {'stattya': _('стаття'), 'bryf': _('бриф'), 'stattya_kanalu': _('стаття каналу')}.get(z.typ, z.typ) }}</span></li>{% endfor %}</ul>
+    {% else %}<p class="porozhno">{{ _("Знань ще немає.") }}</p>{% endif %}
+  </section>
+</div>
+
+<div class="sitka-2">
+  <section class="panel">
+    <h2>{{ ik('i-uvaha') }} {{ _("Дедлайни на 14 днів") }} <a class="roztyah" href="/reyestr">{{ _("увесь реєстр") }}</a></h2>
+    {% if dedlainy %}
+    <ul class="spysok">
+      {% for o in dedlainy %}
+      <li><span class="data">{{ o.deadline.strftime('%d.%m') }}</span>
+        <a class="nazva" href="/reyestr/{{ o.id }}">{{ o.title }}</a>
+        <span>{% if o.id in v_roboti %}<span class="teg">{{ _("у роботі") }}</span>{% endif %}</span>
+        <span class="meta">{{ o.deadline|dniv }} · {{ o.source_org or _('грантодавець: немає даних') }} · {{ S.RELIABILITY.get(o.reliability, o.reliability) }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="porozhno">{{ _("На найближчі 14 днів дедлайнів у реєстрі немає.") }}</p>{% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>{{ ik('i-zavdannya') }} {{ _("Задачі команди") }}</h2>
+    {% if zadachi %}
+    <ul class="spysok">
+      {% for t in zadachi %}
+      <li><span class="data">{{ t.due.strftime('%d.%m') if t.due else '—' }}</span>
+        <span class="nazva">{% if t.application_id %}<a href="/zayavky/{{ t.application_id }}">{{ t.title }}</a>{% else %}{{ t.title }}{% endif %}</span>
+        <form method="post" action="/zadachi/{{ t.id }}/hotovo"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="povernutys" value="/">
+          <button class="k-btn tykha shchilna" title="{{ _('Позначити виконаною') }}">{{ ik('i-hotovo') }}</button></form>
+        {% if t.dzherelo != 'ручна' %}<span class="meta">{{ t.dzherelo }}</span>{% endif %}</li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="porozhno">{{ _("Відкритих задач немає.") }}</p>{% endif %}
+  </section>
+</div>
+
+<div class="sitka-2">
+  <section class="panel">
+    <h2>{{ ik('i-tsil') }} {{ _("Нові збіги під запити") }} <a class="roztyah" href="/potreby">{{ _("усі запити") }}</a></h2>
+    {% if novi %}
+    <ul class="spysok">
+      {% for m, p, o in novi %}
+      <li><span class="bal">{{ m.score|bal }}</span>
+        <a class="nazva" href="/potreby/{{ p.id }}">{{ o.title }}</a><span></span>
+        <span class="meta">{{ _("для «") }}{{ p.nazva }}» · {{ o.deadline|dniv }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="porozhno">{{ _("Нових збігів із балом від 50 немає. Додайте запит клієнта — підбір запуститься сам.") }}</p>{% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>{{ ik('i-kanban') }} {{ _("Заявки за стадіями") }} <a class="roztyah" href="/zayavky">{{ _("дошка") }}</a></h2>
+    <div class="kroky">{% for k, v in stadii.items() %}<span class="{{ 'proideno' if po_stadiyakh.get(k) }}">{{ v }}: {{ po_stadiyakh.get(k, 0) }}</span>{% endfor %}</div>
+    {% if zboi %}
+    <h2>{{ ik('i-ai') }} {{ _("Агент потребує уваги") }}</h2>
+    <ul class="spysok">{% for r in zboi %}<li><span class="teg krytych">{{ r.status }}</span><span class="nazva">{{ r.krok }} · {{ r.klas_pomylky or _('див. журнал') }}</span><span></span></li>{% endfor %}</ul>
+    {% endif %}
+    <p class="dribno">{% if import_ %}{{ _("Останній імпорт:") }} {{ import_.created_at|data }} ({{ import_.feed }}: +{{ import_.dodano }} {{ _("нових,") }} {{ import_.onovleno }} {{ _("оновлено)") }}{% else %}{{ _("Імпорту ще не було.") }}{% endif %}</p>
+  </section>
+</div>
+{% endblock %}

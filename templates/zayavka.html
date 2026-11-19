@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Заявка #") }}{{ a.id }} {{ _("· Гранти під запит") }}{% endblock %}
+{% block shapka %}<a href="/zayavky">{{ _("Заявки") }}</a> / #{{ a.id }}{% endblock %}
+{% block telo %}
+<div>
+  <h1 class="zah">{{ o.title if o else a.nazva }}</h1>
+  <p class="pidzah">{% if p %}{{ _("Запит:") }} <a href="/potreby/{{ p.id }}">{{ p.nazva }}</a> · {% endif %}{% if o %}<a href="/reyestr/{{ o.id }}">{{ _("картка програми") }}</a> {{ _("· дедлайн") }} {{ o.deadline|data if o.deadline else _('немає даних') }}{% if o.deadline %} ({{ o.deadline|dniv }}){% endif %}{% endif %}
+    {% if a.arkhiv %} · <span class="teg siryi">{{ _("в архіві") }}</span>{% endif %}</p>
+  <div class="kroky s-8a77e5a">
+    {% for k in poryadok %}<span class="{{ 'ye' if k == a.stadiya else ('proideno' if poryadok.index(k) < poryadok.index(a.stadiya) else '') }}">{{ stadii[k] }}</span>{% endfor %}
+  </div>
+</div>
+
+<div class="sitka-2">
+  <div class="s-664d8b4">
+    {% if nastupna %}
+    <section class="gejt {{ 'ok' if not gejt else 'ni' }}">
+      <b>{{ _("Наступна стадія:") }} {{ stadii[nastupna] }}</b>
+      {% if pravylo %}<span class="dribno">{{ _("Умова:") }} {{ pravylo.opys }}</span>{% endif %}
+      {% if gejt %}<ul>{% for g in gejt %}<li>{{ g }}</li>{% endfor %}</ul>{% else %}<span>{{ _("Умову виконано — можна переходити.") }}</span>{% endif %}
+      <form method="post" action="/zayavky/{{ a.id }}/stadiya" class="ryad-diy"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="nova" value="{{ nastupna }}">
+        {% if nastupna == 'skryninh' %}<input class="k-pole s-fc5db2c" name="prychyna_vidboru" placeholder="{{ _('Чому беремо в роботу (якщо бал < 50)') }}" value="{{ a.prychyna_vidboru }}">{% endif %}
+        <button class="k-btn holovna" {% if gejt and nastupna != 'skryninh' %}disabled{% endif %}>{{ _("Перейти до «") }}{{ stadii[nastupna] }}»</button>
+      </form>
+    </section>
+    {% endif %}
+
+    {% if a.stadiya == 'podacha' %}
+    <section class="panel">
+      <h2>{{ ik('i-lyst') }} {{ _("Подача") }}</h2>
+      <p class="dribno">{{ _("Подає людина — на порталі грантодавця, поштою чи через «Дію». Тут лише фіксуємо факт.") }}</p>
+      {% if a.podano_at %}<p>{{ _("Подано") }} {{ a.podano_at|data }} — {{ a.podano_kto }}</p>
+      {% elif user.can('send') %}
+      <form method="post" action="/zayavky/{{ a.id }}/podano" class="ryad-diy"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input class="k-pole" type="date" name="data_podachi" required value="{{ sohodni().isoformat() }}">
+        <button class="k-btn holovna">{{ _("Позначити: я подав(-ла) заявку") }}</button></form>
+      {% else %}<p class="dribno">{{ _("Немає права позначати подачу.") }}</p>{% endif %}
+    </section>
+    {% endif %}
+    {% if a.stadiya == 'rezultat' %}
+    <form method="post" action="/zayavky/{{ a.id }}/rezultat" class="panel"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h2>{{ ik('i-kubok') }} {{ _("Результат") }}</h2>
+      <div class="ryad-diy">{% for k, v in rezultaty.items() %}<button class="k-btn shchilna {{ 'holovna' if a.rezultat == k }}" name="rezultat" value="{{ k }}">{{ v }}</button>{% endfor %}</div>
+    </form>
+    {% endif %}
+
+    {% if skryn %}
+    <section class="panel" id="skryninh">
+      <h2>{{ ik('i-tsil') }} {{ _("Скринінг під цей запит") }}
+        <span class="roztyah">{% if a.verdykt == 'подаватися' %}<span class="teg">{{ _("подаватися") }}</span>{% elif a.verdykt == 'ні' %}<span class="teg siryi">{{ _("не подаватися") }}</span>{% else %}<span class="teg uvaha">{{ _("уточнити") }}</span>{% endif %}</span></h2>
+      <p class="dribno">{{ _("Стан програми:") }} {{ {'open':_('відкрита'),'closing':_('закривається'),'rolling':_('постійний прийом'),'closed':_('закрита'),'ne_znaydeno':_('не знайдено в першоджерелі')}.get(skryn.status, skryn.status or _('немає даних')) }}
+        {% if skryn.deadline %} {{ _("· дедлайн") }} {{ skryn.deadline }}{% endif %}{% if skryn.suma %} {{ _("· сума:") }} {{ skryn.suma }}{% endif %}{% if skryn.spivfin_pct is not none %} {{ _("· співфінансування") }} {{ skryn.spivfin_pct }}%{% endif %}</p>
+      {% if skryn.zayavnyky %}<p class="dribno">{{ _("Хто може подаватися:") }} {{ skryn.zayavnyky }}</p>{% endif %}
+      <div class="tekst-dovgyi">{{ skryn.chomu }}</div>
+      {% if skryn.cheklist %}
+      <h3 class="s-67a34a8">{{ _("Чекліст документів") }}</h3>
+      <ul class="spysok">{% for c in skryn.cheklist %}
+        <li><span class="teg {{ '' if c.ye else 'uvaha' }}">{{ _('є') if c.ye else _('бракує') }}</span><span class="nazva">{{ c.dokument }}</span>
+          <span class="meta">{% if c.de %}{{ c.de }}{% endif %}{% if c.dzherelo %}{% if c.de %} · {% endif %}{{ _("вимога:") }} {{ c.dzherelo }}{% endif %}</span></li>{% endfor %}</ul>
+      {% endif %}
+      {% if skryn.dzherela %}<details><summary class="dribno">{{ _("Джерела (") }}{{ skryn.dzherela|length }})</summary><ul class="spysok">{% for d in skryn.dzherela %}
+        <li><a class="nazva" href="{{ d.url }}" target="_blank" rel="noopener noreferrer">{{ d.url }}</a>{% if d.tsytata %}<span class="meta">«{{ d.tsytata }}»</span>{% endif %}</li>{% endfor %}</ul></details>{% endif %}
+    </section>
+    {% endif %}
+
+    <section class="panel" id="dokumenty">
+      <h2>{{ ik('i-dokument') }} {{ _("Документи заявки") }} <span class="roztyah">{{ _("остання версія кожного") }}</span></h2>
+      {% if doky %}
+      <ul class="spysok">{% for d in doky %}
+        <li><span class="teg siryi">{{ vydy.get(d.vyd, d.vyd) }}</span>
+          <span class="nazva"><a href="/perehlyad/dok/{{ d.id }}">{{ d.nazva }}</a> <span class="dribno">v{{ d.versiya }}</span>
+            {% if d.ai_chernetka %}<span class="ai">{{ _("AI-чернетка — перевірте") }}</span>{% endif %}</span>
+          <span>{% if d.pohodzheno_kym %}<span class="teg">{{ _("погоджено:") }} {{ d.pohodzheno_kym }}</span>
+            {% elif not pohodzh[d.id] %}<form method="post" action="/dokumenty/{{ d.id }}/pohodyty"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="k-btn shchilna">{{ _("Погодити") }}</button></form>
+            {% else %}<span class="teg uvaha" title="{{ pohodzh[d.id] }}">{{ _("чекає погодження") }}</span>{% endif %}</span>
+          <span class="meta">{{ _("автор") }} {{ d.avtor or '—' }} · {{ d.created_at|data }}{% if istoriya.get(d.group_uid)|length > 1 %} {{ _("· версій:") }} {{ istoriya[d.group_uid]|length }}{% endif %}
+            <details class="inline"><summary class="dribno s-9bcb06b">{{ _("нова версія") }}</summary>
+              <form method="post" action="/zayavky/{{ a.id }}/dokument" enctype="multipart/form-data" class="ryad-diy"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="group_uid" value="{{ d.group_uid }}"><input type="hidden" name="vyd" value="{{ d.vyd }}">
+                <input type="hidden" name="nazva" value="{{ d.nazva }}"><input type="file" name="fayl" required><button class="k-btn shchilna">{{ _("Завантажити") }}</button></form></details></span></li>
+      {% endfor %}</ul>
+      {% else %}<p class="porozhno">{{ _("Документів ще немає.") }}</p>{% endif %}
+      <form method="post" action="/zayavky/{{ a.id }}/dokument" enctype="multipart/form-data" class="ryad-diy"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <select class="k-vybir" name="vyd">{% for k, v in vydy.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
+        <input class="k-pole s-8084b0b" name="nazva" placeholder="{{ _('Назва документа') }}">
+        <input type="file" name="fayl" required><button class="k-btn">{{ _("Додати документ") }}</button>
+      </form>
+    </section>
+  </div>
+
+  <div class="s-664d8b4">
+    <form method="post" action="/zayavky/{{ a.id }}/krok" class="panel"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h2>{{ ik('i-dali') }} {{ _("Наступний крок") }}</h2>
+      <input class="k-pole" name="krok" value="{{ a.nastupnyi_krok }}" placeholder="{{ _('Що робимо далі') }}">
+      <div class="forma-ryad">
+        <label class="pole"><span>{{ _("До") }}</span><input class="k-pole" type="date" name="do" value="{{ a.nastupnyi_krok_do.isoformat() if a.nastupnyi_krok_do else '' }}"></label>
+      </div>
+      <button class="k-btn">{{ _("Зберегти") }}</button>
+    </form>
+    <section class="panel">
+      <h2>{{ ik('i-zavdannya') }} {{ _("Задачі") }}</h2>
+      {% if zadachi %}<ul class="spysok">{% for t in zadachi %}
+        <li><span class="data">{{ t.due.strftime('%d.%m') if t.due else '—' }}</span>
+          <span class="nazva" {% if t.done %}style="text-decoration:line-through;color:var(--prygl)"{% endif %}>{{ t.title }}</span>
+          <form method="post" action="/zadachi/{{ t.id }}/hotovo"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="povernutys" value="/zayavky/{{ a.id }}">
+            <button class="k-btn tykha shchilna" title="{{ _('Повернути') if t.done else _('Виконано') }}">{{ ik('i-skasuvaty' if t.done else 'i-hotovo') }}</button></form>
+          <span class="meta">{% if t.dzherelo != 'ручна' %}{{ t.dzherelo }}{% endif %}</span></li>
+      {% endfor %}</ul>{% else %}<p class="porozhno">{{ _("Задач немає.") }}</p>{% endif %}
+      <form method="post" action="/zadachi" class="ryad-diy"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="application_id" value="{{ a.id }}"><input type="hidden" name="povernutys" value="/zayavky/{{ a.id }}">
+        <input class="k-pole s-8084b0b" name="title" required placeholder="{{ _('Нова задача') }}">
+        <input class="k-pole" type="date" name="due"><button class="k-btn">{{ _("Додати") }}</button>
+      </form>
+    </section>
+    <form method="post" action="/zayavky/{{ a.id }}/arkhiv" class="ryad-diy"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="k-btn tykha shchilna">{{ _('Повернути з архіву') if a.arkhiv else _('В архів') }}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

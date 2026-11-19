@@ -1,0 +1,34 @@
+/* Generated from former inline style attributes (the CSP allows no inline styles).
+   !important keeps the exact precedence the inline attribute had over component rules.
+   One class per distinct declaration block; candidates for consolidation into components. */
+.s-0613838 { flex:1 1 140px !important }
+.s-07fa7b4 { flex:1 1 200px !important }
+.s-0acf465 { display:grid !important; gap:6px !important; min-inline-size:0 !important }
+.s-0ddf068 { overflow-x:auto !important }
+.s-2f559a5 { margin-block:var(--sp4) !important }
+.s-3b7ef05 { flex:1 1 260px !important }
+.s-3c19453 { margin-block:var(--sp3) !important }
+.s-4a4b4c4 { min-inline-size:0 !important }
+.s-547d569 { font-size:1.6rem !important; line-height:1.25 !important }
+.s-664d8b4 { display:grid !important; gap:var(--sp4) !important; align-content:start !important }
+.s-67a34a8 { margin-top:var(--sp3) !important }
+.s-7251ed7 { margin-block:var(--sp2) !important }
+.s-8084b0b { flex:1 1 180px !important }
+.s-86abdab { white-space:nowrap !important }
+.s-8a77e5a { margin-top:8px !important }
+.s-8c5865f { margin-inline-start:auto !important }
+.s-908fe14 { flex:1 1 220px !important }
+.s-9bc0561 { align-items:end !important }
+.s-9bcb06b { display:inline !important; cursor:pointer !important }
+.s-ada8b7c { text-align:center !important; padding:48px !important }
+.s-b2ab899 { text-decoration:none !important; color:inherit !important; display:grid !important; gap:4px !important }
+.s-cfdbe21 { max-inline-size:56rem !important }
+.s-d24639c { font-size:1.08em !important }
+.s-d4ce0c2 { margin-block-end:var(--sp4) !important }
+.s-d4e30c4 { max-inline-size:100% !important; block-size:auto !important }
+.s-ddf3b17 { display:flex !important; gap:8px !important; flex-wrap:wrap !important; align-items:end !important }
+.s-e2f6719 { border:0 !important; padding:0 !important; margin:0 !important }
+.s-e671d6e { display:grid !important; gap:var(--sp3) !important; margin-top:var(--sp3) !important }
+.s-f2c9619 { text-align:center !important; padding:40px !important }
+.s-fe7b497 { margin-top:6px !important }
+.s-fc5db2c { flex:1 1 240px !important }
