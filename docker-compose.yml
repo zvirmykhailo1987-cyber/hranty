@@ -1,0 +1,22 @@
+# One command demo:  docker compose up --build   →  http://localhost:8070
+# Demo accounts are listed in DEMO.md. Data lives in the named volume (docker compose down -v resets it).
+services:
+  grants:
+    build: .
+    image: grants-demo
+    ports:
+      - "127.0.0.1:8070:8070"
+    environment:
+      HRANTY_ENV: demo
+      HRANTY_SECRET: ${HRANTY_SECRET:-demo-only-secret-change-me-0123456789abcdef}
+    volumes:
+      - grants-data:/data
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  grants-data:
