@@ -157,6 +157,10 @@ table.k-tab td{ vertical-align:top }
 
 /* ── Shell additions (vitryna): guest pages, profile menu, language switch ── */
 .gost{ min-block-size:100dvh; display:grid; place-items:center; padding:24px }
+/* Guest pages: the copyright line shares the first screen instead of pushing below the fold. */
+.gost-stoyka{ min-block-size:100dvh; display:flex; flex-direction:column }
+.gost-stoyka > .gost{ flex:1 0 auto; min-block-size:0 }
+.gost-stoyka > .avtorstvo{ margin-block:0; padding:0 16px 16px }
 .gost-forma{ inline-size:min(420px,100%) }
 .pomylka-panel{ inline-size:min(560px,100%); margin-inline:auto }
 .pomylka-kod{ font-size:2.6rem; font-weight:700; line-height:1; margin:0; color:var(--prygl) }
@@ -182,5 +186,5 @@ html [hidden] { display: none !important }
   .spysok > li > :first-child{ grid-column:1 / -1; justify-self:start }
   .spysok .meta{ grid-column:1 / -1 }
 }
-.avtorstvo{margin:32px 0 8px;font-size:12px;line-height:1.5;color:var(--prygl,#6b7280);text-align:center}
+.avtorstvo{margin:32px auto 8px;font-size:12px;line-height:1.5;color:var(--prygl,#6b7280);text-align:center}
 .avtorstvo a{color:inherit;text-decoration:underline;text-underline-offset:2px}
