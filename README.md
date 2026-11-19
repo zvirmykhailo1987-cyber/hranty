@@ -52,7 +52,12 @@ Implemented in [`app/authkit.py`](app/authkit.py) (shared with the sibling OFIS 
 - **Sessions**: server-side, absolute expiry + idle timeout, revocable (logout, "sign out everywhere"), rotated on login.
 - **CSRF**: double-submit token + Origin/Referer check on every unsafe browser request;
   the Bearer-token API does not use cookies.
-- **Login rate limiting** per client IP and per login.
+- **Login rate limiting**: 5 failures lock the (client IP, login) pair for 15 minutes; separate,
+  higher thresholds per IP (30) and per login (50) stop spraying and distributed guessing without
+  letting one client lock everybody out.
+- **Request size limits**: an ASGI guard answers 413 before any form or upload is parsed
+  (sign-in and CSP-report bodies are capped at 16 KB).
+- **Cookies**: `Secure` + `__Host-` prefix in every environment except local development.
 - **Headers**: strict CSP with nonces (no inline scripts, handlers or styles), CSP reporting,
   `frame-ancestors 'none'`, `nosniff`, COOP/CORP, HSTS in production; documents are previewed
   in a sandboxed frame with their own CSP.
