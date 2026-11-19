@@ -5,7 +5,7 @@
 """Numbers for the README / CV, computed from the code and (optionally) a database — never typed by hand.
 
     python scripts/metrics.py                       # code-only numbers
-    python scripts/metrics.py --db data/ofis.sqlite # + data numbers, read-only, + acceptance run
+    python scripts/metrics.py --db data/hranty.sqlite # + data numbers, read-only, + acceptance run
 
 Output is JSON so it can be pasted into docs or checked in CI.
 """
@@ -62,7 +62,7 @@ def acceptance_static() -> dict[str, int] | None:
 def acceptance_run(db: Path) -> dict[str, int] | None:
     if not (ROOT / "tests" / "acceptance.py").exists():
         return None
-    env = {"DB_PATH": str(db), "DATA_DIR": str(db.parent), "OFIS_ENV": "demo", "PYTHONIOENCODING": "utf-8",
+    env = {"DB_PATH": str(db), "DATA_DIR": str(db.parent), "HRANTY_ENV": "demo", "PYTHONIOENCODING": "utf-8",
            "SYSTEMROOT": "C:\\Windows", "PATH": ""}
     out = subprocess.run([sys.executable, "-m", "tests.acceptance"], cwd=ROOT, capture_output=True,  # noqa: S603  # nosec B603
                          text=True, encoding="utf-8", errors="replace", env=env).stdout
