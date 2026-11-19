@@ -71,7 +71,8 @@ def _konvertuvaty(fayly: list[Path], taimaut: int = 600) -> None:
             shutil.copyfile(f, kopiya)
             mapa[kopiya.stem] = kesh_pdf(f)
         profil = (td / "profil").as_uri()
-        subprocess.run([so, f"-env:UserInstallation={profil}",  # noqa: S603 — fixed argv, no shell "--headless", "--norestore", "--convert-to", "pdf",  # nosec B603
+        # fixed argv, renamed copies of our own files, no shell
+        subprocess.run([so, f"-env:UserInstallation={profil}", "--headless", "--norestore", "--convert-to", "pdf",  # noqa: S603  # nosec B603
                         "--outdir", str(td / "out"), *[str(p) for p in sorted(vkhid.iterdir())]],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=taimaut, check=False)
         for pdf in (td / "out").glob("*.pdf") if (td / "out").exists() else []:
@@ -91,8 +92,14 @@ def pdf_dlya(path: Path) -> Path | None:
     if v != "ofisnyi":
         return None
     k = kesh_pdf(path)
-    if not k.exists():
+    nevdacha = k.with_suffix(".failed")
+    if not k.exists() and not nevdacha.exists():
         _konvertuvaty([path], taimaut=180)
+        if not k.exists():
+            # Remember the failure: a file that cannot be converted must not hold the
+            # conversion lock for 180 s on every view.
+            KESH.mkdir(parents=True, exist_ok=True)
+            nevdacha.write_text("conversion failed", encoding="utf-8")
     return k if k.exists() else None
 
 

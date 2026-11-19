@@ -6,7 +6,7 @@
 import os
 from pathlib import Path
 
-ENV = os.getenv("HRANTY_ENV", "dev")            # dev | demo | production
+ENV = os.getenv("HRANTY_ENV", "production")   # fail-closed: dev/demo must be chosen explicitly            # dev | demo | production
 IS_PROD = ENV == "production"
 # Demo = the public showcase: synthetic data (`python -m app.seed_demo`).
 IS_DEMO = ENV == "demo"
@@ -44,7 +44,8 @@ BOOTSTRAP_PASSWORD = os.getenv("HRANTY_BOOTSTRAP_PASSWORD", "")
 API_TOKEN = os.getenv("HRANTY_API_TOKEN", "dev-api-token" if ENV == "dev" else "")
 
 # Sessions (server-side, see app/authkit.py)
-SECURE_COOKIES = IS_PROD or os.getenv("HRANTY_SECURE_COOKIES") == "1"
+# Secure + __Host- cookies everywhere except local dev (browsers treat http://localhost as secure).
+SECURE_COOKIES = ENV != "dev" or os.getenv("HRANTY_SECURE_COOKIES") == "1"
 SESSION_TTL = int(os.getenv("HRANTY_SESSION_TTL", str(60 * 60 * 24 * 7)))
 SESSION_IDLE = int(os.getenv("HRANTY_SESSION_IDLE", str(60 * 60 * 8)))
 MAX_FILE_MB = 25

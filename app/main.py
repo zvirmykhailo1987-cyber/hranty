@@ -141,7 +141,8 @@ def health():
             lyudej = s.exec(text("select count(*) from user")).one()[0]
             mozhl = s.exec(text("select count(*) from opportunity")).one()[0]
     except Exception as e:  # noqa: BLE001
-        return JSONResponse({"ok": False, "baza": type(e).__name__}, status_code=503)
-    if config.IS_PROD:
+        detail = {"baza": type(e).__name__} if config.ENV == "dev" else {}
+        return JSONResponse({"ok": False, **detail}, status_code=503)
+    if config.ENV != "dev":
         return {"ok": True}
     return {"ok": True, "env": config.ENV, "lyudej": lyudej, "mozhlyvostei": mozhl}

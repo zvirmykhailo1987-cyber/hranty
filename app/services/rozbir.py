@@ -28,7 +28,8 @@ def tegy_z_tekstu(*teksty: str) -> list[str]:
 
 
 ZAYAV_KLUCHI = {
-    "hromada": ["громад", "омс", "муніцип", "municipal", "місцев самоврядуван", "сільськ рад", "міськ рад"],
+    # "громад" alone would also hit "громадська організація" (an NGO): the noun's case forms only
+    "hromada": [r"re:громад(?:а|и|і|у|ою|ам|ами|ах)?(?![\wʼ])", "омс", "муніцип", "municipal", "місцев самоврядуван", "сільськ рад", "міськ рад"],
     "kp": ["комунальн підприєм", "кп ", "водоканал", "utility", "utilities"],
     "biznes": ["мсп", "мсб", "фоп", "sme", "бізнес", "підприєм", "компан", "business", "юрос", "приватн"],
     "fermer": ["фермер", "агровиробник", "сільгосп", "farmer", "аграрі"],
@@ -37,20 +38,44 @@ ZAYAV_KLUCHI = {
 }
 
 
+def _frazovyi_rx(fraza: str) -> re.Pattern[str]:
+    """Each word of a key phrase must START a word, in order; keys of ≤3 letters are whole words
+    ("го" must not match the adjective ending "-го", "кп" must not match inside a word).
+    A key starting with "re:" is an explicit regex anchored at a word start."""
+    if fraza.startswith("re:"):
+        return re.compile(r"(?<![\wʼ])" + fraza[3:])
+    chastyny = []
+    for slovo in norm(fraza).split():
+        slovo = re.escape(slovo.strip(" ,"))
+        chastyny.append(slovo + (r"(?![\wʼ])" if len(slovo) <= 3 else r"[\wʼ]*"))
+    return re.compile(r"(?<![\wʼ])" + r"\s+".join(chastyny))
+
+
+_ZAYAV_RX = {k: [_frazovyi_rx(x) for x in kl if x.strip(" ,")] for k, kl in ZAYAV_KLUCHI.items()}
+
+
 def zayavnyky_z_tekstu(t: str) -> list[str]:
-    tt = " " + norm(t) + " "
-    if not tt.strip():
+    tt = norm(t)
+    if not tt:
         return []
-    return [k for k, kl in ZAYAV_KLUCHI.items() if any(norm(x) in tt or x in tt for x in kl)]
+    return [k for k, rxs in _ZAYAV_RX.items() if any(rx.search(tt) for rx in rxs)]
 
 
 _VALYUTY = [("EUR", r"€|eur|євро"), ("USD", r"\$|usd|дол"), ("CHF", r"chf|франк"), ("GBP", r"£|gbp|фунт"),
             ("UAH", r"грн|uah|гривн")]
-_CHYSLO = re.compile(r"(\d[\d\s  .,]*\d|\d)\s*(млрд|млн|тис|k|m|bn)?", re.I)
+# A number: thousands groups of exactly three digits separated by one space/NBSP, comma or dot,
+# or a plain number with an optional decimal part. The multiplier must end a word, so the
+# "m" of "maximum" or "months" is not read as millions.
+_CHYSLO = re.compile(r"(?<![\d\w])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+|\d{1,3}(?:,\d{3})+(?:\.\d+)?"
+                     r"|\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)"
+                     r"(?:\s*(млрд|млн|тис|bn|k|m)(?![\w]))?", re.I)
+_ROKY = re.compile(r"^(19|20)\d{2}$")
 
 
 def _v_chyslo(s: str, mnozh: str) -> float | None:
     s = s.replace(" ", "").replace(" ", "").replace(" ", "")
+    if re.fullmatch(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?", s):
+        s = s.replace(",", "")              # "100,000" / "1,250,000.50": comma = thousands
     if s.count(",") == 1 and s.count(".") == 0:
         s = s.replace(",", ".")
     s = s.replace(",", "")
@@ -70,11 +95,11 @@ def suma(t: str) -> tuple[float | None, float | None, str | None]:
     if not tt or tt.startswith("немає даних"):
         return None, None, None
     val = next((k for k, rx in _VALYUTY if re.search(rx, tt)), None)
-    chysla = [_v_chyslo(a, b) for a, b in _CHYSLO.findall(tt)]
+    chysla = [_v_chyslo(a, b) for a, b in _CHYSLO.findall(tt) if b or not _ROKY.match(a)]   # years are not amounts
     chysla = [x for x in chysla if x is not None and x >= 100]   # відсікти «20%», «3 роки», «1 грант»
     if not chysla:
         return None, None, val
-    if len(chysla) >= 2 and re.search(r"(\d)\s*[–—-]\s*(\d)", tt):
+    if len(chysla) >= 2 and re.search(r"\d\s*(млн|тис|k|m)?\s*[–—-]\s*[€$£]?\s*\d", tt):
         return min(chysla[:2]), max(chysla[:2]), val
     return (None, chysla[0], val) if re.search(r"\bдо\b|up to|max", tt) or len(chysla) == 1 else (None, max(chysla), val)
 

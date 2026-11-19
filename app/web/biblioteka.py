@@ -47,8 +47,10 @@ async def zavantazhyty(opportunity_id: int = Form(...), vyd: str = Form("inshe")
         return redirect(f"/reyestr/{opportunity_id}#fayly")          # той самий файл уже є
     tekst = ""
     try:
+        import asyncio
+
         from ..services.extract import read_file
-        tekst = read_file(docstore.shlyakh(meta["stored_name"]))[:200000]
+        tekst = (await asyncio.to_thread(read_file, docstore.shlyakh(meta["stored_name"])))[:200000]
     except Exception as e:  # noqa: BLE001 — extracted text is optional
         import logging
         logging.getLogger("uvicorn.error").info("text extraction skipped: %s", type(e).__name__)

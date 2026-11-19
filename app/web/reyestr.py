@@ -96,7 +96,7 @@ async def klasyfikatsiya(oid: int, request: Request, user: User = Depends(requir
 
 @router.post("/reyestr/{oid}/verdykt")
 def verdykt(oid: int, verdykt: str = Form(...), prymitka: str = Form(""),
-            user: User = Depends(current_user), s: Session = Depends(get_session)):
+            user: User = Depends(require_cap(CAP_DATA)), s: Session = Depends(get_session)):
     """Вердикт скринінгу вручну (агент пише той самий вердикт автоматично)."""
     o = s.get(Opportunity, oid)
     if not o or verdykt not in VERDYKTY:

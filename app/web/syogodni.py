@@ -25,7 +25,8 @@ def syogodni(request: Request, user: User = Depends(current_user), s: Session = 
     dedlainy = sorted(dedlainy, key=lambda o: (o.id not in v_roboti, o.id not in zi_zbihiv, o.deadline))[:12]
     novi = list(s.exec(select(Match, Potreba, Opportunity).join(Potreba, Match.potreba_id == Potreba.id)
                        .join(Opportunity, Match.opportunity_id == Opportunity.id)
-                       .where(Match.stan == "novyi", Match.score >= 0.5).order_by(Match.score.desc()).limit(8)))
+                       .where(Match.stan == "novyi", Match.score >= 0.5, Opportunity.active == True)  # noqa: E712
+                       .order_by(Match.score.desc()).limit(8)))
     zadachi = list(s.exec(select(Task).where(Task.done == False)  # noqa: E712
                           .order_by(Task.due).limit(12)))
     po_stadiyakh = dict(s.exec(select(Application.stadiya, func.count()).where(Application.arkhiv == False)  # noqa: E712

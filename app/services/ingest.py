@@ -57,6 +57,7 @@ def _zapys_v_mozhlyvist(r: dict, feed: str) -> dict:
         "tags": ",".join(rozbir.tegy_z_tekstu(tekst)),
         "zayavnyky": ",".join(rozbir.zayavnyky_z_tekstu(str(r.get("for_whom") or "") + " " + str(r.get("notes") or ""))),
         "source_feed": feed,
+        "_yavni": {k for k in ("status", "reliability") if r.get(k)},
     }
 
 
@@ -66,26 +67,34 @@ def upsert(s: Session, polya: dict, sohodni: date | None = None) -> str:
         return "nevalidnyi"
     uh = rozbir.url_hash(polya["url"])
     dk = rozbir.dedup_key(polya["title"], polya["source_org"])
+    yavni = polya.pop("_yavni", set())
     o = s.exec(select(Opportunity).where(Opportunity.url_hash == uh)).first() if uh else None
     if not o:
-        o = s.exec(select(Opportunity).where(Opportunity.dedup_key == dk)).first()
+        # Title+funder fallback only when a URL cannot decide: two calls with the same
+        # generic title but different URLs are different programmes.
+        kand = s.exec(select(Opportunity).where(Opportunity.dedup_key == dk)).first()
+        if kand and (not uh or not kand.url_hash):
+            o = kand
     sohodni = sohodni or utcnow().date()
     if not o:
         o = Opportunity(**{**polya, "first_seen": polya.get("first_seen") or sohodni},
                         url_hash=uh, dedup_key=dk, last_checked=sohodni)
         o.active = o.status != "closed"
         s.add(o)
+        s.flush()
+        from .zhyvyi import podiya, zastosuvaty_status
         if o.active and polya.get("source_feed", "").startswith(("radar", "portal", "grant_market")):
-            s.flush()
-            from .zhyvyi import podiya
             podiya(s, f"nova:{o.id}", "nova_mozhlyvist",
                    f"Нова можливість у реєстрі{(' (дедлайн ' + o.deadline.strftime('%d.%m.%Y') + ')') if o.deadline else ''}: {o.title}",
                    1, opportunity_id=o.id)
+        zastosuvaty_status(s, o, sohodni)        # e.g. imported already "closing soon"
         return "dodano"
     zminy = False
     stary_dl = o.deadline
     for k in POLYA_ONOVLENNYA:
         v = polya.get(k)
+        if k in ("status", "reliability") and k not in yavni:
+            continue                 # absent in the feed → keep the curated value, no default
         if v not in (None, "") and getattr(o, k) != v:
             setattr(o, k, v)
             zminy = True
@@ -102,8 +111,8 @@ def upsert(s: Session, polya: dict, sohodni: date | None = None) -> str:
         v_roboti = s.exec(select(Application).where(Application.opportunity_id == o.id, Application.arkhiv == False)).first()  # noqa: E712
         podiya(s, f"dl:{o.id}:{o.deadline}", "dedlain_zmineno",
                f"Змінено дедлайн {stary_dl:%d.%m.%Y} → {o.deadline:%d.%m.%Y}: {o.title}", 3 if v_roboti else 1, opportunity_id=o.id)
-    o.status = status_z_dedlainu(o.status, o.deadline, sohodni)
-    o.active = o.status != "closed"
+    from .zhyvyi import zastosuvaty_status
+    zastosuvaty_status(s, o, sohodni)
     o.last_checked = sohodni
     o.updated_at = utcnow()
     s.add(o)
@@ -156,6 +165,7 @@ def importuvaty_zapysy(s: Session, zapysy: object, feed: str, dzherelo: str = ""
     log = _rakhuvaty(s, spysok, feed, dzherelo[:200], lambda r: _zapys_v_mozhlyvist(r, feed))
     if not ok:
         log.prymitka = "ingest gate: " + zvit[-500:]
+        log.nevalidni += (len(zapysy) if isinstance(zapysy, list) else 1) - len(spysok)
         s.add(log); s.commit()
     return log
 

@@ -141,6 +141,9 @@ def seed(s: Session) -> dict:
         raise RuntimeError("seed_demo refuses to run in production")
     rnd = random.Random(SEED)  # noqa: S311 — deterministic demo data, not security  # nosec B311
     today = utcnow().date()
+    # A database that already holds data is never touched — not even its accounts.
+    if s.exec(select(Potreba)).first() or s.exec(select(Opportunity)).first():
+        return {"skipped": True}
     users = _users(s)
     made = {"opportunities": 0, "requests": 0, "applications": 0}
 
@@ -149,9 +152,6 @@ def seed(s: Session) -> dict:
             s.add(Funder(name=name, name_full=name, typ=typ, kraina=country,
                          url=f"https://{name.lower().replace(' ', '-')}.example", src="demo", src_key=name))
     s.commit()
-
-    if s.exec(select(Potreba)).first():          # already seeded → idempotent no-op
-        return {"skipped": True}
 
     zapysy = []
     for i, (title, kind, amount, for_whom, notes, fi, dl, rel) in enumerate(PROGRAMMES):

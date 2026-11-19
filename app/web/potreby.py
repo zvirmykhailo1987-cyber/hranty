@@ -15,17 +15,29 @@ router = APIRouter()
 
 
 def _float(x: str) -> float | None:
-    try:
-        return float(str(x).replace(" ", "").replace(",", ".")) if str(x).strip() else None
-    except ValueError:
+    """Budget field: "1 200 000", "1,200,000" or "1200000.5"; anything else is rejected (400)."""
+    import math
+    raw = str(x or "").strip().replace(" ", "").replace("\u00a0", "")
+    if not raw:
         return None
+    if raw.count(",") > 1 or (raw.count(",") == 1 and len(raw.split(",")[1]) == 3):
+        raw = raw.replace(",", "")          # thousands separators
+    raw = raw.replace(",", ".")
+    try:
+        v = float(raw)
+    except ValueError:
+        raise HTTPException(400, "Бюджет має бути числом") from None
+    if not math.isfinite(v) or v < 0:
+        raise HTTPException(400, "Бюджет має бути невідʼємним числом")
+    return v
 
 
 @router.get("/potreby")
 def spysok(request: Request, user: User = Depends(current_user), s: Session = Depends(get_session)):
     potreby = list(s.exec(select(Potreba).order_by(Potreba.status, Potreba.id.desc())))
     lichba = {}
-    for m in s.exec(select(Match).where(Match.stan != "vidkhyleno", Match.score >= 0.5)):
+    for m in s.exec(select(Match).join(Opportunity, Match.opportunity_id == Opportunity.id)
+                    .where(Match.stan != "vidkhyleno", Match.score >= 0.5, Opportunity.active == True)):  # noqa: E712
         lichba[m.potreba_id] = lichba.get(m.potreba_id, 0) + 1
     users = {u.id: u for u in s.exec(select(User))}
     return render(request, "potreby.html", user=user, potreby=potreby, lichba=lichba, users=users)
@@ -117,6 +129,8 @@ async def redaguvaty(pid: int, request: Request, user: User = Depends(current_us
     if not p:
         raise HTTPException(404)
     _zapovnyty(p, await request.form())
+    if not p.nazva:
+        raise HTTPException(400, "Вкажіть назву запиту")
     s.add(p); audit.log(s, user.name, "potreba.edit", entity="potreba", entity_id=p.id); s.commit()
     matching.pererakhuvaty(s, p)
     return redirect(f"/potreby/{pid}")

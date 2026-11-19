@@ -70,6 +70,8 @@ def zminyty_stadiyu(aid: int, nova: str = Form(...), prychyna_vidboru: str = For
     prych = gates.perevirka(s, a, nova, user)
     if prych:
         raise HTTPException(409, "Гейт не пройдено: " + "; ".join(prych))
+    if a.stadiya in ("podacha", "rezultat") and nova != a.stadiya and not user.can(CAP_SEND):
+        raise HTTPException(403, "Повернути заявку з подачі може лише людина з правом подачі")
     stara, a.stadiya, a.updated_at = a.stadiya, nova, utcnow()
     s.add(a); audit.log(s, user.name, "application.stage", entity="application", entity_id=aid, detail=f"{stara}→{nova}")
     s.commit()
@@ -86,6 +88,9 @@ def podano(aid: int, data_podachi: str = Form(...), user: User = Depends(require
     d = rozbir.data(data_podachi)
     if not d:
         raise HTTPException(400, "Вкажіть дату подачі")
+    nepohodzheni = [x.nazva or x.vyd for x in gates.aktualni_dokumenty(s, a.id) if not x.pohodzheno_kym]
+    if nepohodzheni:
+        raise HTTPException(409, "Не погоджено: " + ", ".join(nepohodzheni))
     a.podano_at, a.podano_kto = utcnow().replace(year=d.year, month=d.month, day=d.day), user.name
     s.add(a); audit.log(s, user.name, "application.submitted_mark", entity="application", entity_id=aid, tier=3)
     s.commit()
@@ -110,6 +115,8 @@ def nastupnyi_krok(aid: int, krok: str = Form(""), do: str = Form(""), owner_id:
         raise HTTPException(404)
     a.nastupnyi_krok, a.nastupnyi_krok_do = krok.strip()[:300], rozbir.data(do)
     if owner_id.isdigit():
+        if not s.get(User, int(owner_id)):
+            raise HTTPException(400, "Невідомий виконавець")
         a.owner_id = int(owner_id)
     s.add(a); s.commit()
     return redirect(f"/zayavky/{aid}")
@@ -132,6 +139,8 @@ async def dokument(aid: int, vyd: str = Form("inshe"), nazva: str = Form(""), gr
     a = s.get(Application, aid)
     if not a:
         raise HTTPException(404)
+    if a.podano_at:
+        raise HTTPException(409, "Заявку вже подано — документи змінювати не можна")
     try:
         meta = docstore.zberehty(await fayl.read(), fayl.filename or "", "zayavky")
     except docstore.FaylPomylka as e:
@@ -147,6 +156,10 @@ async def dokument(aid: int, vyd: str = Form("inshe"), nazva: str = Form(""), gr
                  versiya=versiya, stored_name=meta["stored_name"], rozmir=meta["rozmir"], avtor=user.name, avtor_id=user.id,
                  created_by=user.name)
     d.group_uid = group_uid or d.uid
+    if a.stadiya == "podacha":
+        # A new, unsigned version invalidates the submission gate: back to "documents".
+        a.stadiya, a.updated_at = "dokumenty", utcnow()
+        s.add(a)
     s.add(d); audit.log(s, user.name, "document.upload", entity="application", entity_id=aid, detail=d.nazva); s.commit()
     return redirect(f"/zayavky/{aid}#dokumenty")
 
@@ -181,8 +194,15 @@ def zavantazhyty(did: int, user: User = Depends(current_user), s: Session = Depe
 @router.post("/zadachi")
 def zadacha(title: str = Form(...), application_id: str = Form(""), assignee_id: str = Form(""), due: str = Form(""),
             povernutys: str = Form("/"), user: User = Depends(current_user), s: Session = Depends(get_session)):
-    t = Task(title=title.strip()[:300], application_id=int(application_id) if application_id.isdigit() else None,
-             assignee_id=None, due=rozbir.data(due),
+    if not title.strip():
+        raise HTTPException(400, "Вкажіть назву задачі")
+    aid = int(application_id) if application_id.isdigit() else None
+    if aid is not None and not s.get(Application, aid):
+        raise HTTPException(400, "Невідома заявка")
+    vid = int(assignee_id) if assignee_id.isdigit() else None
+    if vid is not None and not s.get(User, vid):
+        raise HTTPException(400, "Невідомий виконавець")
+    t = Task(title=title.strip()[:300], application_id=aid, assignee_id=vid, due=rozbir.data(due),
              dzherelo="ручна", created_by=user.name)
     s.add(t); s.commit()
     return redirect(lokalnyi(povernutys))

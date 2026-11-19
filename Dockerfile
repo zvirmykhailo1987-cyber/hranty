@@ -5,7 +5,8 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     HRANTY_ENV=demo \
     DATA_DIR=/data \
-    PORT=8070
+    PORT=8070 \
+    FORWARDED_ALLOW_IPS=127.0.0.1
 
 WORKDIR /app
 
@@ -28,6 +29,8 @@ COPY static ./static
 COPY templates ./templates
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
+# Behind a reverse proxy set FORWARDED_ALLOW_IPS to the proxy's address so the login limiter
+# sees real client IPs (uvicorn reads it with --proxy-headers).
 # Unprivileged runtime user; the database and uploads live on the /data volume.
 RUN useradd --system --uid 10001 --home /app app \
  && mkdir -p /data && chown app:app /data \

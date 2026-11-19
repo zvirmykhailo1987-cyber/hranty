@@ -56,6 +56,9 @@ def perevirka(s: Session, app: Application, nova: str, user: User | None = None)
         if not doky:
             prych.append("у заявці немає жодного документа")
     elif nova == "rezultat":
+        for d in aktualni_dokumenty(s, app.id):
+            if not d.pohodzheno_kym:
+                prych.append(f"не погоджено: {d.nazva or VYDY_DOK.get(d.vyd, d.vyd)} (нова версія після подачі?)")
         if not (app.podano_at and app.podano_kto):
             prych.append("позначте, хто й коли подав заявку (подає лише людина)")
         if user is not None and not user.can(CAP_SEND):

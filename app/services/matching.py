@@ -139,6 +139,13 @@ def score(p: Potreba, o: Opportunity, sohodni: date | None = None) -> Rezultat:
 def pererakhuvaty(s: Session, p: Potreba) -> int:
     """Перерахувати збіги одного запиту. Відхилені вручну лишаються відхиленими."""
     isnuyuchi = {m.opportunity_id: m for m in s.exec(select(Match).where(Match.potreba_id == p.id))}
+    # A "new" match on a programme that has since closed is stale: drop it (taken-into-work and
+    # manually rejected matches stay as history).
+    zakryti = {o.id for o in s.exec(select(Opportunity).where(Opportunity.active == False))}  # noqa: E712
+    for oid, m in list(isnuyuchi.items()):
+        if oid in zakryti and m.stan == "novyi":
+            s.delete(m)
+            del isnuyuchi[oid]
     n = 0
     for o in s.exec(select(Opportunity).where(Opportunity.active == True)):  # noqa: E712
         r = score(p, o)
