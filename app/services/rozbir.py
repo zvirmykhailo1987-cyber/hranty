@@ -102,16 +102,22 @@ def suma(t: str) -> tuple[float | None, float | None, str | None]:
     if not tt or tt.startswith("немає даних"):
         return None, None, None
     val = next((k for k, rx in _VALYUTY if re.search(rx, tt)), None)
-    pary = [(a, b) for a, b in _CHYSLO.findall(tt) if b or not _ROKY.match(a)]   # years are not amounts
-    # "€300-500k": a multiplier written only on the upper end applies to both ends
-    if len(pary) >= 2 and not pary[0][1] and pary[1][1] and re.search(r"\d\s*[–—-]\s*[€$£]?\s*\d", tt):
+    zbihy = [m for m in _CHYSLO.finditer(tt) if m.group(2) or not _ROKY.match(m.group(1))]   # years are not amounts
+    pary = [(m.group(1), m.group(2) or "") for m in zbihy]
+    # "€300-500k": a multiplier written only on the upper end applies to both ends — but only when
+    # the first number is bare and small and the two numbers are joined directly by the dash.
+    if len(zbihy) >= 2 and not pary[0][1] and pary[1][1] and re.fullmatch(r"\d{1,3}(?:[.,]\d+)?", pary[0][0]) \
+            and re.fullmatch(r"\s*[–—-]\s*[€$£]?\s*", tt[zbihy[0].end():zbihy[1].start()]):
         pary[0] = (pary[0][0], pary[1][1])
     chysla = [_v_chyslo(a, b) for a, b in pary]
     chysla = [x for x in chysla if x is not None and x >= 100]   # відсікти «20%», «3 роки», «1 грант»
     if not chysla:
         return None, None, val
-    diapazon = (re.search(r"\d\s*(млн|тис|k|m)?\.?\s*[–—-]\s*[€$£]?\s*\d", tt)
-                or re.search(r"\b(від|from)\b.*\d.*\b(до|to)\b", tt))
+    diapazon = bool(re.search(r"\b(від|from)\b.*\d.*\b(до|to)\b", tt))
+    if len(zbihy) >= 2 and not diapazon:
+        # a dash directly between the first two amounts (not between two years elsewhere)
+        mizh = tt[zbihy[0].end():zbihy[1].start()]
+        diapazon = bool(re.fullmatch(r"\s*(млн|тис|k|m)?\.?\s*(грн|uah|eur|євро|usd|chf|[€$£])?\s*[–—-]\s*[€$£]?\s*", mizh))
     if len(chysla) >= 2 and diapazon:
         return min(chysla[:2]), max(chysla[:2]), val
     return (None, chysla[0], val) if re.search(r"\bдо\b|up to|max", tt) or len(chysla) == 1 else (None, max(chysla), val)

@@ -273,3 +273,40 @@ def test_rollback_below_submission_clears_it(s, halyna):
     assert r.status_code == 303
     s.refresh(a)
     assert a.podano_at is None and a.podano_kto == ""
+
+
+# ── final narrow review ──────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("tekst,ochik", [
+    ("€50 000 – 1 млн", (50000.0, 1000000.0, "EUR")),
+    ("€20 000 - 100k", (20000.0, 100000.0, "EUR")),
+    ("від 500 000 грн до 1,5 млн грн у 2026-2027", (500000.0, 1500000.0, "UAH")),
+    ("2026–2027: 200 000 грн – 2 млн грн", (200000.0, 2000000.0, "UAH")),
+])
+def test_amount_multiplier_is_not_shared_with_full_numbers(tekst, ochik):
+    assert rozbir.suma(tekst) == ochik
+
+
+def test_merged_duplicate_stays_hidden_on_reingest(s):
+    ingest.importuvaty_zapysy(s, [_zapys(30), _zapys(31)], "t")
+    dubl, kanon = s.exec(select(Opportunity).order_by(Opportunity.id)).all()
+    dubl.active, dubl.zlyto_v = False, kanon.id
+    s.add(dubl); s.commit()
+    ingest.importuvaty_zapysy(s, [_zapys(30)], "t")
+    s.refresh(dubl)
+    assert dubl.active is False
+
+
+def test_zip_bomb_with_a_doc_extension_is_refused_before_conversion(tmp_path, monkeypatch):
+    import zipfile
+
+    from app.services import extract, perehlyad
+    calls = []
+    monkeypatch.setattr(perehlyad, "soffice", lambda: "soffice")
+    monkeypatch.setattr(perehlyad, "KESH", tmp_path / "kesh")
+    monkeypatch.setattr(perehlyad.subprocess, "run", lambda argv, **kw: calls.append(argv))
+    f = tmp_path / "bomb.doc"
+    with zipfile.ZipFile(f, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("content.xml", b"0" * (extract.MAX_ROZPAKOVKA + 1))
+    assert perehlyad.pdf_dlya(f) is None and calls == []
+

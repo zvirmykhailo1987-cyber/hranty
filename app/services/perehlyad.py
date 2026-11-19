@@ -94,8 +94,10 @@ def pdf_dlya(path: Path) -> Path | None:
     k = kesh_pdf(path)
     nevdacha = k.with_suffix(".failed")
     if not k.exists() and not nevdacha.exists() and soffice():
+        import zipfile
+
         from .extract import _zip_bezpechnyi
-        if path.suffix.lower() in (".docx", ".xlsx", ".pptx", ".odt", ".ods", ".odp") and not _zip_bezpechnyi(path):
+        if zipfile.is_zipfile(path) and not _zip_bezpechnyi(path):      # by content, any extension
             nevdacha.parent.mkdir(parents=True, exist_ok=True)
             nevdacha.write_text("refused: archive too large", encoding="utf-8")
             return None
@@ -109,15 +111,6 @@ def pdf_dlya(path: Path) -> Path | None:
             KESH.mkdir(parents=True, exist_ok=True)
             nevdacha.write_text("conversion failed", encoding="utf-8")
     return k if k.exists() else None
-
-
-def pidhotuvaty(fayly: list[Path], porciya: int = 40) -> dict:
-    """Масова попередня конвертація всіх офісних файлів, яких ще немає в кеші."""
-    treba = [Path(f) for f in fayly if Path(f).exists() and vyd(Path(f)) == "ofisnyi" and not kesh_pdf(Path(f)).exists()]
-    for i in range(0, len(treba), porciya):
-        _konvertuvaty(treba[i:i + porciya])
-    hotovo = sum(1 for f in treba if kesh_pdf(f).exists())
-    return {"potribno": len(treba), "hotovo": hotovo, "ne_vdalos": len(treba) - hotovo}
 
 
 def storinky(pdf: Path) -> int:

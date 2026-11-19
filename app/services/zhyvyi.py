@@ -39,7 +39,7 @@ def zastosuvaty_status(s: Session, o: Opportunity, sohodni: date, r: dict | None
     from .ingest import status_z_dedlainu
     r = r if r is not None else {"zakryto": 0, "zakryvayetsya": 0, "novi_zbihy": 0, "zadachi": 0}
     novyi = status_z_dedlainu(o.status, o.deadline, sohodni)
-    aktyvna = novyi != "closed"
+    aktyvna = novyi != "closed" and o.zlyto_v is None      # a merged duplicate stays hidden
     if novyi != o.status or o.active != aktyvna:     # the feed may have set the status directly
         o.status, o.active = novyi, aktyvna
         o.updated_at = utcnow()

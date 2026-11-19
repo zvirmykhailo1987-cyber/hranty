@@ -267,9 +267,9 @@ def test_lockout_policy_pair_ip_login():
 def test_oversized_bodies_are_rejected_before_parsing(gist):
     big = b"x" * (KIT.small_body + 1)
     r = gist.post("/login", content=big, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    assert r.status_code == 413
+    assert r.status_code == 413, r.text
     r = gist.post("/csp-report", content=big, headers={"Content-Type": "application/csp-report"})
-    assert r.status_code == 413
+    assert r.status_code == 413, r.text
     r = gist.post("/csp-report", content=b'{"csp-report": {"violated-directive": "style-src-attr"}}',
                   headers={"Content-Type": "application/csp-report"})
     assert r.status_code == 204
@@ -333,4 +333,16 @@ def test_oversized_chunked_body_is_413_not_500(gist):
         for _ in range(4):
             yield b"x" * (KIT.small_body // 2)
     r = gist.post("/csp-report", content=body(), headers={"Content-Type": "application/csp-report"})
-    assert r.status_code == 413
+    assert r.status_code == 413, r.text
+
+
+def test_oversized_chunked_form_body_is_413(lyudy, gist):
+    """Routes with Form parameters parse the body inside FastAPI: still 413, never 400/500."""
+    tok = token(gist)
+
+    def body():
+        yield f"csrf_token={tok}&login=".encode()
+        for _ in range(4):
+            yield b"x" * (KIT.small_body // 2)
+    r = gist.post("/login", content=body(), headers={"Content-Type": "application/x-www-form-urlencoded"})
+    assert r.status_code == 413, r.text
