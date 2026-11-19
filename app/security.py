@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Mykhailo Zvir
 
-"""App-level glue over :mod:`app.authkit` (shared with OFIS).
+"""App-level glue over :mod:`app.authkit` (shared with Project Office CRM).
 
 Passwords are argon2id; legacy ``sha256(SECRET + pw)`` hashes are upgraded on
 the first successful login. Sessions are server-side rows (see ``AuthSession``).

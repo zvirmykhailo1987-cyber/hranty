@@ -3,9 +3,8 @@
 
 """Контрольовані словники порталу.
 
-KINDS / STATUS / RELIABILITY / KATEGORIYI — дзеркало portal_investytsiy/app/models/opportunity.py
-і enum схеми радару (skills/radar-finansuvannya/schemas/opportunity.schema.json); паритет стереже
-tests/test_slovnyky.py. Невідомо → None, не "" (Г15).
+KINDS / STATUS / RELIABILITY / KATEGORIYI — єдине джерело допустимих значень для моделей,
+форм і фільтрів. Невідомо → None, не "".
 """
 KINDS = {
     "grant": "Грант", "loan": "Кредит", "guarantee": "Гарантія",

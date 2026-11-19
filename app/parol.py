@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Mykhailo Zvir
 
-"""Задати пароль користувачеві там, де живе система (форк ofis_crm/app/parol.py).
+"""Задати пароль користувачеві там, де живе система (той самий інструмент, що в Project Office CRM).
 
     python -m app.parol bohdan      # приховане введення
     python -m app.parol --usim          # усім випадкові, показ один раз

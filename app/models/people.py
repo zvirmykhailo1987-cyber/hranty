@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Mykhailo Zvir
 
-"""Користувачі, ролі, аудит. Форк ofis_crm/app/models/people.py (див. FORK.md):
+"""Користувачі, ролі, аудит. Патерн Project Office CRM:
 ті самі 4 ролі й підписи; права адаптовано під гранти (CAP_AGENT замість CAP_CRM)."""
 from datetime import datetime
 

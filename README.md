@@ -45,7 +45,7 @@ HRANTY_ENV=demo uvicorn app.main:app --port 8070
 
 ## Security
 
-Implemented in [`app/authkit.py`](app/authkit.py) (shared with the sibling OFIS platform) and covered by tests:
+Implemented in [`app/authkit.py`](app/authkit.py) (shared with the sibling [Project Office CRM](https://github.com/zvirmykhailo1987-cyber/project-office-crm)) and covered by tests:
 
 - **Individual accounts** (the former shared team password and the "open mode" are gone).
 - **Passwords**: argon2id; legacy `sha256(secret+password)` hashes are upgraded on first login.

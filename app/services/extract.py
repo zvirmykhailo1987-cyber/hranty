@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Mykhailo Zvir
 
-"""Текст із PDF/XLSX/DOCX/TXT. Форк ofis_crm/app/services/extract.py::read_file (див. FORK.md);
+"""Текст із PDF/XLSX/DOCX/TXT. Той самий читач, що в Project Office CRM;
 повертає рядок (порожній, якщо тексту немає — скан без OCR)."""
 from pathlib import Path
 

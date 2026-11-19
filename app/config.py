@@ -4,7 +4,7 @@
 """Конфіг з ENV. У проді — fail-fast, якщо секрети не задані.
 
 Секрети НІКОЛИ не в git: локально — дефолти для розробки, у проді — `DATA_DIR/secrets.env`
-або змінні оточення Coolify. (Патерн — з ofis_crm/app/config.py, див. FORK.md.)
+або змінні оточення Coolify. (Той самий патерн, що в Project Office CRM.)
 """
 import os
 from pathlib import Path

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Mykhailo Zvir
 
-"""Спільна база рядка (форк ofis_crm/app/models/base.py, див. FORK.md)."""
+"""Спільна база рядка (той самий патерн, що в Project Office CRM)."""
 import uuid
 from datetime import datetime, UTC
 

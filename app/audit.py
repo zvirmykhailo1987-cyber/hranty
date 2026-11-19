@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Mykhailo Zvir
 
-"""Risk-tier журнал дій (форк ofis_crm/app/audit.py, див. FORK.md)."""
+"""Risk-tier журнал дій (той самий патерн, що в сестринському Project Office CRM)."""
 from sqlmodel import Session
 
 from .models import AuditEntry
