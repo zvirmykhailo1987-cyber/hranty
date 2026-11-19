@@ -66,6 +66,9 @@ def test_empty_production_database_needs_a_bootstrap_password(tmp_path, monkeypa
     monkeypatch.setattr(config, "BOOTSTRAP_PASSWORD", "short")
     with pytest.raises(RuntimeError, match="HRANTY_BOOTSTRAP_PASSWORD"):
         db.init_db(eng)
+    monkeypatch.setattr(config, "BOOTSTRAP_PASSWORD", "OnlyLettersButLongEnough")
+    with pytest.raises(RuntimeError, match="not letters only"):
+        db.init_db(eng)
     monkeypatch.setattr(config, "BOOTSTRAP_PASSWORD", "a-long-enough-password")
     db.init_db(eng)
     with Session(eng) as s:
@@ -150,6 +153,8 @@ def test_password_tool(monkeypatch, capsys, s):
     s.expire_all()
     assert check_pw(s.exec(select(User).where(User.login == "bohdan")).one().password_hash, "new-secret-123")[0]
     answers = iter(["short", "short"])
+    assert parol.main(["bohdan"]) == 2
+    answers = iter(["OnlyLettersMixedCase", "OnlyLettersMixedCase"])
     assert parol.main(["bohdan"]) == 2
     answers = iter(["long-enough-1", "different-22"])
     assert parol.main(["bohdan"]) == 2

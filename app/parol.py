@@ -17,6 +17,7 @@ from sqlmodel import Session, select
 
 from .db import engine, init_db
 from .models import User
+from .authkit import password_problem
 from .security import hash_pw
 
 ABETKA = "".join(c for c in string.ascii_letters + string.digits if c not in "lI1O0")
@@ -52,8 +53,12 @@ def main(argv: list[str]) -> int:
             print(f"  {lg:12} {p}")
         return 0
     p1 = getpass.getpass(f"новий пароль для {argv[0]}: ")
-    if len(p1) < 8 or p1 != getpass.getpass("ще раз: "):
-        print("закоротко (мін. 8) або не збіглись", file=sys.stderr)
+    problem = password_problem(p1)
+    if problem:
+        print(problem, file=sys.stderr)
+        return 2
+    if p1 != getpass.getpass("ще раз: "):
+        print("не збіглись", file=sys.stderr)
         return 2
     print("змінено" if zadaty(argv[0], p1) else "немає такого логіна")
     return 0

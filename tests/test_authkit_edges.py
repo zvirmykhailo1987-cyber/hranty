@@ -17,7 +17,8 @@ from tests.conftest import sesiya_dlya
 
 
 @pytest.mark.parametrize("pw,ok", [("short1!", False), ("onlylowercaseletters", False),
-                                   ("Long-enough-pass", True), ("longpassword12", True)])
+                                   ("Long-enough-pass", True), ("longpassword12", True),
+                                   ("OnlyLettersMixedCase", False)])
 def test_password_policy(pw, ok):
     assert (authkit.password_problem(pw) is None) is ok
 

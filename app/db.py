@@ -5,7 +5,7 @@
 from sqlalchemy import event
 from sqlmodel import Session, SQLModel, create_engine, select
 
-from . import config
+from . import authkit, config
 from .models import StageRule, User
 from .security import hash_pw
 
@@ -43,9 +43,9 @@ def bootstrap(eng=None) -> None:
     with Session(eng) as s:
         if not s.exec(select(User)).first():
             pw = config.BOOTSTRAP_PASSWORD
-            if config.IS_PROD and len(pw) < 12:
+            if config.IS_PROD and authkit.password_problem(pw):
                 raise RuntimeError("Empty database in production: set HRANTY_BOOTSTRAP_PASSWORD "
-                                   "(12+ characters) for the first admin account.")
+                                   "(12+ characters, not letters only) for the first admin account.")
             for name, login, role in KOMANDA:
                 s.add(User(name=name, login=login, role=role,
                            password_hash=hash_pw(pw) if pw and login == "marko" else ""))
