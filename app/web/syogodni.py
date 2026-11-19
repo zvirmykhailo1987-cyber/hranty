@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """«Сьогодні»: що горить — дедлайни, нові збіги, задачі команди, збої агента."""
 from datetime import timedelta
 

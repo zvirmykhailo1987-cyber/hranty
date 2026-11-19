@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Jinja2 + фільтри відображення (дати, гроші, словники)."""
 from datetime import date, datetime
 

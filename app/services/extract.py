@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Текст із PDF/XLSX/DOCX/TXT. Форк ofis_crm/app/services/extract.py::read_file (див. FORK.md);
 повертає рядок (порожній, якщо тексту немає — скан без OCR)."""
 from pathlib import Path

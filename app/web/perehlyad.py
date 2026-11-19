@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Сторінка перегляду будь-якого документа порталу (документи запитів і заявок, документи програм, пакети)."""
 from pathlib import Path
 

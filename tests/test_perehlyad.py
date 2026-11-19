@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Перегляд документів у порталі: PDF inline + сторінки PNG, текст рендериться, HTML — у пісочниці."""
 from app.models import Document, Potreba
 from app.services import docstore

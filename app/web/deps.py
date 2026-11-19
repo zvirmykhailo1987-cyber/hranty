@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Поточний користувач, гейт прав, рендер зі спільним контекстом."""
 from fastapi import Depends, Header, HTTPException, Request
 from fastapi.responses import RedirectResponse

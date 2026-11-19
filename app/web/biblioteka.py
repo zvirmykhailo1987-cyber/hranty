@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Документи програм: положення, форми, шаблони, бюджети, прецеденти — з походженням (URL, дата, sha256).
 Етап A: ручне завантаження; етап B: збирач агента кладе файли сюди ж."""
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile

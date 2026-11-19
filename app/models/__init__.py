@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 from ..authkit import AuthSession  # noqa: F401
 from .base import BaseRow, utcnow  # noqa: F401
 from .people import (CAP_ADMIN, CAP_AGENT, CAP_APPROVE, CAP_DATA, CAP_DELETE, CAP_SEND,  # noqa: F401

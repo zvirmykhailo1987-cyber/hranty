@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Реєстр грантів: фільтри, картка можливості, ручні правки тегів/заявників/вердикту."""
 from urllib.parse import urlencode
 

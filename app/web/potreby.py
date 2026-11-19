@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Запити клієнтів: на що шукаємо гроші + ранжований список грантів із поясненням."""
 import json
 

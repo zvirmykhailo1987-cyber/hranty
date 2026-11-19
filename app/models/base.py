@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Спільна база рядка (форк ofis_crm/app/models/base.py, див. FORK.md)."""
 import uuid
 from datetime import datetime, UTC

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Живий портал: щоденне обслуговування, стрічка змін, знання."""
 from datetime import timedelta
 

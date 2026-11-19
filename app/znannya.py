@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Імпорт «Знань» (статті й брифи редакції, статті каналу) з пакета JSON, який збирає ПК (deploy/radar_sync.py).
 Формат: [{slug, typ, title, dek, body_md, dzherela:[{title,url,date,reliability}], tags, data, dzherelo, url, access}].
 Ідемпотентно: оновлення за slug; нове знання → подія стрічки «Що змінилось».

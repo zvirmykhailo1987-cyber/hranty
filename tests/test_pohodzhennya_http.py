@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Sign-off over real HTTP with individual accounts: the author can never approve
 their own document, a role without the right gets 403, someone else may approve."""
 from sqlmodel import select

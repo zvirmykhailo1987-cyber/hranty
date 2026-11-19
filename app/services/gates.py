@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Гейти стадій заявки: що потрібно, щоб УВІЙТИ в стадію. Назад — завжди можна.
 
 Ідея форку — ofis_crm/app/services/gates.py (див. FORK.md), правила — під гранти.

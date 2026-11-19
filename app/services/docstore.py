@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Безпечне сховище файлів (патерн portal_investytsiy/app/services/docstore.py, див. FORK.md):
 білий список розширень, ліміт розміру, uuid-імена, захист від виходу за теку, sha256 для дедупу."""
 import hashlib

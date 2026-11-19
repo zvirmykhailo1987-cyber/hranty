@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Ядро етапу A: ролі, словники, розбір, імпорт, підбір, гейти, файли, API."""
 import json
 from datetime import timedelta

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Перегляд документів у порталі без завантаження.
 
 PDF показується як є; DOCX/DOC/ODT/RTF/XLSX/XLS/ODS/PPTX конвертуються в PDF через LibreOffice (headless)

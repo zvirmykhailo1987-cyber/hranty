@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Пояснюваний підбір «запит клієнта ↔ можливість».
 
 Патерн компонентів — з portal_investytsiy/app/services/matchmaking.py (див. FORK.md):

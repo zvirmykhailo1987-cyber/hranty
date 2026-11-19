@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Regression tests for the independent code and security review (one test per finding)."""
 import json
 from datetime import timedelta

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Opportunity import (radar format). Idempotent: a repeated run creates no duplicates.
 
 Input is a JSON list of opportunities (title, url, kind, deadline, amount, …) — sent by

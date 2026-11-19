@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """«Гранти під запит» — оперативний грантовий портал Проєктного офісу."""
 from contextlib import asynccontextmanager
 

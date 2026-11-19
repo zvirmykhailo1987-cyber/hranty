@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Контрольовані словники порталу.
 
 KINDS / STATUS / RELIABILITY / KATEGORIYI — дзеркало portal_investytsiy/app/models/opportunity.py

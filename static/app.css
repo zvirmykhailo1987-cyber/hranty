@@ -182,3 +182,5 @@ html [hidden] { display: none !important }
   .spysok > li > :first-child{ grid-column:1 / -1; justify-self:start }
   .spysok .meta{ grid-column:1 / -1 }
 }
+.avtorstvo{margin:32px 0 8px;font-size:12px;line-height:1.5;color:var(--prygl,#6b7280);text-align:center}
+.avtorstvo a{color:inherit;text-decoration:underline;text-underline-offset:2px}

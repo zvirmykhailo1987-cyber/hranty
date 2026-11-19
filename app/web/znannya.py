@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """«Знання»: статті й брифи редакції та статті каналу — автоматично щодня, з пошуком і фільтрами."""
 import json
 

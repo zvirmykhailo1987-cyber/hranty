@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """Machine API for the ingest worker (Bearer ``HRANTY_API_TOKEN``; no cookies, so no CSRF)."""
 import json
 import re

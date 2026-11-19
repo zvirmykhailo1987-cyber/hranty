@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Mykhailo Zvir
+
 """БД: SQLite + SQLModel. Створення таблиць, команда (4 людини), гейти стадій."""
 from sqlalchemy import event
 from sqlmodel import Session, SQLModel, create_engine, select
