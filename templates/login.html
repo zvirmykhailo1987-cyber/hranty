@@ -14,8 +14,22 @@
       <input class="k-pole" id="l-parol" type="password" name="password" autocomplete="current-password" required
              {% if error %}aria-invalid="true" aria-describedby="e-vhid" autofocus{% endif %}></label>
     <button class="k-btn holovna" type="submit">{{ _("Увійти") }}</button>
-    {% if demo %}<p class="pidzah">{{ _("Демо-версія з вигаданими даними. Облікові записи — у DEMO.md.") }}</p>{% endif %}
     {% include "_mova.html" %}
   </form>
+  {% if demo %}{# demo mode only: the public demo accounts (synthetic data), one-click fill #}
+  <section class="panel gost-forma demo-akaunty" aria-labelledby="demo-zag">
+    <h2 class="demo-zag" id="demo-zag">{{ _("Демо-акаунти") }}</h2>
+    <p class="pidzah">{{ _("Демо-версія: усі дані вигадані й скидаються щоночі о 04:00 (CET).") }}
+      {{ _("Оберіть роль — форма заповниться.") }}</p>
+    <ul class="demo-spysok">
+      {% for login, rol, parol in demo_accounts %}
+      <li><button class="k-btn tykha demo-akaunt" type="button" data-login="{{ login }}" data-parol="{{ parol }}">
+        <b>{{ _(rol) }}</b>
+        <span class="pidzah">{{ _("Логін") }}: <code>{{ login }}</code> · {{ _("Пароль") }}: <code>{{ parol }}</code></span>
+      </button></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
 </main>
 {% endblock %}

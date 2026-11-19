@@ -162,6 +162,12 @@ table.k-tab td{ vertical-align:top }
 .gost-stoyka > .gost{ flex:1 0 auto; min-block-size:0 }
 .gost-stoyka > .avtorstvo{ margin-block:0; padding:0 16px 16px }
 .gost-forma{ inline-size:min(420px,100%) }
+.gost .demo-akaunty{ display:grid; gap:8px; margin-block-start:16px }
+.demo-zag{ margin:0; font-size:1rem }
+.demo-spysok{ list-style:none; margin:0; padding:0; display:grid; gap:8px }
+.demo-akaunt{ inline-size:100%; display:grid; justify-items:start; gap:2px; text-align:start;
+              block-size:auto; padding-block:8px; white-space:normal }
+.demo-smuha{ display:block; margin-block-end:12px }
 .pomylka-panel{ inline-size:min(560px,100%); margin-inline:auto }
 .pomylka-kod{ font-size:2.6rem; font-weight:700; line-height:1; margin:0; color:var(--prygl) }
 .shapka-zag{ min-inline-size:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
