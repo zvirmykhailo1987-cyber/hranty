@@ -2,6 +2,8 @@
 
 [![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 
+**Live demo:** https://grants-demo.159.195.219.73.sslip.io — synthetic data that resets every night at 04:00 CET; demo logins are listed on the sign-in page.
+
 An internal portal of a project office that raises grant funding for clients (municipalities,
 utilities, farms, small businesses): **client requests → explainable grant matching →
 applications moving through gated stages → versioned documents with sign-off.** A person always
